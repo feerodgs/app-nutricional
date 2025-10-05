@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'login_screen.dart'; // Importa a tela de login
-import 'main.dart'; // Importa o MyHomePage
+
+// --- ALTERAÇÃO AQUI ---
+// 1. Remova a importação da antiga tela de login.
+// import 'login_screen.dart';
+// 2. Importe a nova tela de autenticação com os botões sociais.
+import 'auth_screen.dart';
+
+import 'home_screen.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -21,13 +27,14 @@ class AuthGate extends StatelessWidget {
 
         // Se há um usuário logado (snapshot.hasData ou snapshot.data != null)
         if (snapshot.hasData) {
-          // Retorna a tela principal (MyHomePage, neste caso)
-          return const MyHomePage();
+          // Retorna a tela principal (HomeScreen)
+          return const HomeScreen();
         }
         // Se não houver usuário logado (snapshot.data == null)
         else {
-          // Retorna a tela de login/cadastro
-          return const LoginScreen();
+          // --- ALTERAÇÃO AQUI ---
+          // Retorna a nova tela de autenticação com login social
+          return const AuthScreen();
         }
       },
     );

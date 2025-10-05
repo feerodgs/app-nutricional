@@ -12,7 +12,20 @@
           "package_name": "com.example.nutri_plan"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "122960398385-27nsa6esmjogv5mjjqueddmjb733t6qo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nutri_plan",
+            "certificate_hash": "677a9dae538f7950ccc9e526d0b82891033b7130"
+          }
+        },
+        {
+          "client_id": "122960398385-9ki2snh3h9klhi6ramjr5i2crc3542st.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCiALplU9cgwpDYjnPZWsNB_RsIWR9DPTU"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "122960398385-9ki2snh3h9klhi6ramjr5i2crc3542st.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "122960398385-bk8ha5phte0eingcmb5fb7eg60p8u037.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.nutriPlan"
+              }
+            }
+          ]
         }
       }
     }
