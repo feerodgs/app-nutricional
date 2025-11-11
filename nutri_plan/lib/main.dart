@@ -1,30 +1,51 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
-import 'screens/welcome_screen.dart';
+import 'src/viewmodels/auth_viewmodel.dart';
+import 'src/viewmodels/user_viewmodel.dart';
+import 'src/views/auth/sign_in_view.dart';
+import 'src/views/home/home_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const NutriPlanApp());
+  runApp(const App());
 }
 
-class NutriPlanApp extends StatelessWidget {
-  const NutriPlanApp({super.key});
-
+class App extends StatelessWidget {
+  const App({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'NutriPlan',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        colorScheme:
-            ColorScheme.fromSwatch(primarySwatch: Colors.blue).copyWith(
-          secondary: Colors.amber,
-        ),
-        useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => UserViewModel()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: const Root(),
       ),
-      home: const WelcomeScreen(),
+    );
+  }
+}
+
+class Root extends StatelessWidget {
+  const Root({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.read<AuthViewModel>();
+    return StreamBuilder(
+      stream: auth.authState,
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
+        }
+        if (snap.data == null) return const SignInView();
+        return const HomeView();
+      },
     );
   }
 }
