@@ -27,25 +27,40 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> _signInWithEmail() async {
     FocusScope.of(context).unfocus();
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty)
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      setState(() => _errorMessage = 'Preencha todos os campos.');
       return;
+    }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
     try {
-      // --- CORREÇÃO AQUI ---
-      // Trocamos o '_auth' indefinido pela instância direta do FirebaseAuth.
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      // ✅ Nenhum push manual aqui — AuthGate detectará automaticamente
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login realizado com sucesso!')),
+      );
     } on FirebaseAuthException catch (e) {
       setState(() {
-        if (e.code == 'user-not-found' ||
-            e.code == 'wrong-password' ||
-            e.code == 'invalid-credential') {
-          _errorMessage = 'E-mail ou senha inválidos.';
-        } else {
-          _errorMessage = 'Ocorreu um erro. Tente novamente.';
+        switch (e.code) {
+          case 'user-not-found':
+          case 'wrong-password':
+          case 'invalid-credential':
+            _errorMessage = 'E-mail ou senha inválidos.';
+            break;
+          case 'too-many-requests':
+            _errorMessage =
+                'Muitas tentativas. Tente novamente em alguns minutos.';
+            break;
+          default:
+            _errorMessage = 'Erro: ${e.message ?? 'Tente novamente.'}';
         }
       });
     } finally {
@@ -54,20 +69,33 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _signInWithGoogle() async {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Acessando Google...')));
-    await _authService.signInWithGoogle();
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Conectando com o Google...')),
+      );
+      await _authService.signInWithGoogle();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao conectar com Google: $e')),
+      );
+    }
   }
 
   Future<void> _signInWithFacebook() async {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Acessando Facebook...')));
-    await _authService.signInWithFacebook();
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Conectando com o Facebook...')),
+      );
+      await _authService.signInWithFacebook();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao conectar com Facebook: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // (O resto do seu código da UI continua exatamente o mesmo...)
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -95,28 +123,36 @@ class _AuthScreenState extends State<AuthScreen> {
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 32),
+
+              // Campo de e-mail
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'E-mail',
                   prefixIcon: const Icon(Icons.email_outlined),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
+
+              // Campo de senha
               TextField(
                 controller: _passwordController,
                 decoration: InputDecoration(
                   labelText: 'Senha',
                   prefixIcon: const Icon(Icons.lock_outline),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 obscureText: true,
               ),
               const SizedBox(height: 24),
+
+              // Mensagem de erro
               if (_errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -126,6 +162,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
+
+              // Botão de login
               SizedBox(
                 height: 50,
                 child: ElevatedButton(
@@ -134,21 +172,30 @@ class _AuthScreenState extends State<AuthScreen> {
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: _isLoading
                       ? const SizedBox(
                           height: 25,
                           width: 25,
                           child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 3),
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
                         )
-                      : const Text('ENTRAR',
+                      : const Text(
+                          'ENTRAR',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 24),
+
+              // Separador
               const Row(
                 children: [
                   Expanded(child: Divider()),
@@ -160,6 +207,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 ],
               ),
               const SizedBox(height: 24),
+
+              // Login com Google
               ElevatedButton.icon(
                 icon: const Icon(FontAwesomeIcons.google, color: Colors.red),
                 label: const Text('Continuar com Google'),
@@ -169,10 +218,13 @@ class _AuthScreenState extends State<AuthScreen> {
                   foregroundColor: Colors.black87,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+
+              // Login com Facebook
               ElevatedButton.icon(
                 icon: const Icon(FontAwesomeIcons.facebook, color: Colors.blue),
                 label: const Text('Continuar com Facebook'),
@@ -182,7 +234,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   foregroundColor: Colors.black87,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
             ],
