@@ -1,57 +1,56 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../data/meal_repository.dart';
 import '../models/meal.dart';
 
-enum QuickRange { hoje, seteDias, trintaDias, custom }
+enum HistoryQuickRange { hoje, seteDias, trintaDias, custom }
 
-class ReportsViewModel extends ChangeNotifier {
-  QuickRange range = QuickRange.seteDias;
+class HistoryViewModel extends ChangeNotifier {
+  HistoryQuickRange range = HistoryQuickRange.seteDias;
   DateTime? customStart;
   DateTime? customEnd;
-  String query = ''; // filtro por nome da refeição
+  String query = '';
 
-  // dados
   List<Meal> meals = [];
   bool loading = false;
   String? error;
 
-  void setRange(QuickRange r) {
+  StreamSubscription<List<Meal>>? _sub; // <- controla o stream
+
+  void setRange(HistoryQuickRange r) {
     range = r;
-    notifyListeners();
   }
 
   void setQuery(String v) {
     query = v;
-    notifyListeners();
   }
 
   void setCustom(DateTime start, DateTime end) {
     customStart = start;
     customEnd = end;
-    range = QuickRange.custom;
-    notifyListeners();
+    range = HistoryQuickRange.custom;
   }
 
   ({DateTime start, DateTime end}) _calcWindow() {
     final now = DateTime.now();
     switch (range) {
-      case QuickRange.hoje:
+      case HistoryQuickRange.hoje:
         final s = DateTime(now.year, now.month, now.day);
         return (start: s, end: s.add(const Duration(days: 1)));
-      case QuickRange.seteDias:
+      case HistoryQuickRange.seteDias:
         final s = DateTime(now.year, now.month, now.day)
             .subtract(const Duration(days: 6));
         final e =
             DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
         return (start: s, end: e);
-      case QuickRange.trintaDias:
+      case HistoryQuickRange.trintaDias:
         final s = DateTime(now.year, now.month, now.day)
             .subtract(const Duration(days: 29));
         final e =
             DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
         return (start: s, end: e);
-      case QuickRange.custom:
+      case HistoryQuickRange.custom:
         final s = customStart ?? DateTime(now.year, now.month, now.day);
         final e = (customEnd ?? now).add(const Duration(days: 1));
         return (
@@ -69,29 +68,28 @@ class ReportsViewModel extends ChangeNotifier {
       return;
     }
 
+    // cancela o listener anterior antes de abrir outro
+    await _sub?.cancel();
     loading = true;
     error = null;
     notifyListeners();
-    try {
-      final w = _calcWindow();
-      // 1x subscribe immediate snapshot (pequeno, simples):
-      MealRepository.watchRange(u.uid, w.start, w.end).listen((list) {
-        meals = list
-            .where((m) =>
-                query.isEmpty ||
-                m.name.toLowerCase().contains(query.toLowerCase()))
-            .toList();
-        notifyListeners();
-      });
-    } catch (e) {
-      error = 'Erro ao carregar';
-    } finally {
+
+    final w = _calcWindow();
+    _sub =
+        MealRepository.watchRangeHistory(u.uid, w.start, w.end).listen((list) {
+      final q = query.toLowerCase();
+      meals = q.isEmpty
+          ? list
+          : list.where((m) => m.name.toLowerCase().contains(q)).toList();
       loading = false;
       notifyListeners();
-    }
+    }, onError: (e) {
+      error = 'Erro ao carregar';
+      loading = false;
+      notifyListeners();
+    });
   }
 
-  // agregados
   double get totKcal => meals.fold(0, (a, m) => a + m.totalKcal);
   double get totProt => meals.fold(0, (a, m) => a + m.totalProtein);
   double get totCarb => meals.fold(0, (a, m) => a + m.totalCarbs);
@@ -105,5 +103,11 @@ class ReportsViewModel extends ChangeNotifier {
     }
     final keys = map.keys.toList()..sort();
     return {for (final k in keys) k: map[k]!};
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 }

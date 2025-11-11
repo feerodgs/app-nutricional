@@ -36,4 +36,9 @@ class MealRepository {
     return q.snapshots().map(
         (s) => s.docs.map((d) => Meal.fromSnapshot(d.id, d.data())).toList());
   }
+
+  static Stream<List<Meal>> watchRangeHistory(
+      String uid, DateTime start, DateTime end) {
+    return watchRange(uid, start, end);
+  }
 }
