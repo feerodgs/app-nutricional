@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../viewmodels/user_viewmodel.dart';
 import '../../../viewmodels/auth_viewmodel.dart';
-// opcional: import da tela de metas
+import '../../settings/edit_goals_view.dart'; // ajuste o import se necessário
 
-class ConfiguracoesPage extends StatelessWidget {
+class ConfiguracoesPage extends StatefulWidget {
   const ConfiguracoesPage({super.key});
+
+  @override
+  State<ConfiguracoesPage> createState() => _ConfiguracoesPageState();
+}
+
+class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<UserViewModel>().loadCurrent(); // <- AQUI
+    });
+  }
 
   String _initials(String? name, String? email) {
     final base = (name?.trim().isNotEmpty == true ? name! : (email ?? ''))
@@ -19,10 +33,147 @@ class ConfiguracoesPage extends StatelessWidget {
     return '$first$last';
   }
 
+  Future<void> _editUserSheet(BuildContext context) async {
+    final vm = context.read<UserViewModel>();
+    final authUser = FirebaseAuth.instance.currentUser;
+
+    final currentName = vm.user?.name?.trim().isNotEmpty == true
+        ? vm.user!.name!
+        : (authUser?.displayName ?? '');
+    final currentEmail = vm.user?.email?.trim().isNotEmpty == true
+        ? vm.user!.email!
+        : (authUser?.email ?? '');
+
+    final nameCtrl = TextEditingController(text: currentName);
+    final emailCtrl = TextEditingController(text: currentEmail);
+    final formKey = GlobalKey<FormState>();
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final viewInsets = MediaQuery.of(ctx).viewInsets;
+
+        return AnimatedPadding(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding:
+              EdgeInsets.only(bottom: viewInsets.bottom), // sobe com teclado
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.95,
+            expand: false, // não ocupa a tela toda; respeita o padding animado
+            builder: (ctx, scroll) {
+              return SingleChildScrollView(
+                controller: scroll,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        height: 4,
+                        width: 48,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Text('Editar cadastro',
+                          style: Theme.of(ctx).textTheme.titleMedium),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: nameCtrl,
+                        decoration: const InputDecoration(labelText: 'Nome'),
+                        textInputAction: TextInputAction.next,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Informe o nome'
+                            : null,
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: emailCtrl,
+                        decoration: const InputDecoration(labelText: 'E-mail'),
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.done,
+                        validator: (v) {
+                          final t = (v ?? '').trim();
+                          if (t.isEmpty) return 'Informe o e-mail';
+                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(t)) {
+                            return 'E-mail inválido';
+                          }
+                          return null;
+                        },
+                        onFieldSubmitted: (_) => FocusScope.of(ctx).unfocus(),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Cancelar'),
+                          ),
+                          const Spacer(),
+                          FilledButton.icon(
+                            icon: const Icon(Icons.save),
+                            label: const Text('Salvar'),
+                            onPressed: () async {
+                              if (!formKey.currentState!.validate()) return;
+                              try {
+                                await vm.updateProfile(
+                                  name: nameCtrl.text.trim(),
+                                  email: emailCtrl.text.trim(),
+                                );
+                                if (mounted) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Cadastro atualizado.'),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text('Erro ao salvar: $e')),
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userVM = context.watch<UserViewModel>();
-    final u = userVM.user;
+    final authUser = FirebaseAuth.instance.currentUser;
+
+    final displayName = (userVM.user?.name?.trim().isNotEmpty == true)
+        ? userVM.user!.name!
+        : (authUser?.displayName ?? 'Usuário');
+    final displayEmail = (userVM.user?.email?.trim().isNotEmpty == true)
+        ? userVM.user!.email!
+        : (authUser?.email ?? '-');
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -31,11 +182,12 @@ class ConfiguracoesPage extends StatelessWidget {
         const SizedBox(height: 12),
         Card(
           child: ListTile(
-            leading: CircleAvatar(child: Text(_initials(u?.name, u?.email))),
-            title: Text(u?.name ?? 'Usuário'),
-            subtitle: Text(u?.email ?? '-'),
+            leading:
+                CircleAvatar(child: Text(_initials(displayName, displayEmail))),
+            title: Text(displayName),
+            subtitle: Text(displayEmail),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {/* TODO: perfil detalhado */},
+            onTap: () => _editUserSheet(context),
           ),
         ),
         const SizedBox(height: 8),
@@ -45,7 +197,12 @@ class ConfiguracoesPage extends StatelessWidget {
             title: const Text('Metas do dia'),
             subtitle: const Text('Calorias e macros'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {/* TODO: Navigator.push para EditGoalsView */},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const EditGoalsView()),
+              );
+            },
           ),
         ),
         const SizedBox(height: 8),

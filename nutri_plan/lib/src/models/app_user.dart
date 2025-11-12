@@ -1,19 +1,10 @@
-// lib/src/models/app_user.dart
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 
-/// Entidade de usuário da aplicação.
-/// Camada: Model (MVVM).
 class AppUser {
-  /// ID do Firebase Auth (imutável).
   final String uid;
-
-  /// E-mail do usuário (opcional).
   final String? email;
-
-  /// Nome exibido (opcional).
   final String? name;
 
-  /// Última atualização (auditoria).
   final DateTime? lastUpdated;
 
   const AppUser({
@@ -23,16 +14,13 @@ class AppUser {
     this.lastUpdated,
   });
 
-  /// Serializa para Firestore/JSON.
   Map<String, dynamic> toJson() => {
         'uid': uid,
         'email': email,
         'name': name,
-        // Firestore aceita DateTime diretamente e salva como Timestamp.
         'lastUpdated': lastUpdated?.toUtc(),
       }..removeWhere((k, v) => v == null);
 
-  /// Constrói a partir de Firestore/JSON.
   factory AppUser.fromJson(Map<String, dynamic> map) {
     DateTime? _toDate(dynamic v) {
       if (v == null) return null;
@@ -51,7 +39,6 @@ class AppUser {
     );
   }
 
-  /// Atalho para atualizar campos de perfil mantendo o uid.
   AppUser copyWith({
     String? email,
     String? name,

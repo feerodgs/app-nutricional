@@ -6,6 +6,7 @@ import '../../../models/meal.dart';
 import '../../meals/new_meal_view.dart';
 import '../../home/widgets/kpi_tile.dart';
 import '../../home/widgets/quick_action_card.dart';
+import './historico_page.dart'; // navegação para histórico
 
 // mock metas (substituir por SettingsRepository se já tiver)
 const double _goalKcal = 2200, _goalProt = 150, _goalCarb = 250, _goalFat = 70;
@@ -22,6 +23,7 @@ class MenuInicialPage extends StatelessWidget {
 
     return StreamBuilder<List<Meal>>(
       stream: MealRepository.watchAll(uid, day: DateTime.now()),
+      initialData: const <Meal>[],
       builder: (context, snap) {
         final meals = snap.data ?? const <Meal>[];
 
@@ -39,61 +41,92 @@ class MenuInicialPage extends StatelessWidget {
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 12),
             KpiTile(
-                title: 'Kcal restantes',
-                value: '${kcalLeft.toStringAsFixed(0)}',
-                subtitle:
-                    '${totKcal.toStringAsFixed(0)} / ${_goalKcal.toStringAsFixed(0)}',
-                progress: _clamp01(totKcal / _goalKcal)),
+              title: 'Kcal restantes',
+              value: '${kcalLeft.toStringAsFixed(0)}',
+              subtitle:
+                  '${totKcal.toStringAsFixed(0)} / ${_goalKcal.toStringAsFixed(0)}',
+              progress: _clamp01(totKcal / _goalKcal),
+            ),
             KpiTile(
-                title: 'Proteínas (g)',
-                value: '${totProt.toStringAsFixed(0)}',
-                subtitle: 'Meta: ${_goalProt.toStringAsFixed(0)}',
-                progress: _clamp01(totProt / _goalProt)),
+              title: 'Proteínas (g)',
+              value: '${totProt.toStringAsFixed(0)}',
+              subtitle: 'Meta: ${_goalProt.toStringAsFixed(0)}',
+              progress: _clamp01(totProt / _goalProt),
+            ),
             KpiTile(
-                title: 'Carboidratos (g)',
-                value: '${totCarb.toStringAsFixed(0)}',
-                subtitle: 'Meta: ${_goalCarb.toStringAsFixed(0)}',
-                progress: _clamp01(totCarb / _goalCarb)),
+              title: 'Carboidratos (g)',
+              value: '${totCarb.toStringAsFixed(0)}',
+              subtitle: 'Meta: ${_goalCarb.toStringAsFixed(0)}',
+              progress: _clamp01(totCarb / _goalCarb),
+            ),
             KpiTile(
-                title: 'Gorduras (g)',
-                value: '${totFat.toStringAsFixed(0)}',
-                subtitle: 'Meta: ${_goalFat.toStringAsFixed(0)}',
-                progress: _clamp01(totFat / _goalFat)),
+              title: 'Gorduras (g)',
+              value: '${totFat.toStringAsFixed(0)}',
+              subtitle: 'Meta: ${_goalFat.toStringAsFixed(0)}',
+              progress: _clamp01(totFat / _goalFat),
+            ),
             const SizedBox(height: 8),
             Text('Ações rápidas',
                 style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 6),
             Wrap(spacing: 12, runSpacing: 12, children: [
+              // Nova refeição
               QuickActionCard(
-                  icon: Icons.add,
-                  label: 'Nova refeição',
-                  onTap: () async {
-                    final id = await Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const NewMealView()));
-                    if (id != null && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Refeição salva.')));
-                    }
-                  }),
+                icon: Icons.add,
+                label: 'Nova refeição',
+                onTap: () async {
+                  final id = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NewMealView()),
+                  );
+                  if (id != null && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Refeição salva.')),
+                    );
+                  }
+                },
+              ),
+
+              // Água
               const QuickActionCard(
-                  icon: Icons.star_border, label: 'Favoritos'),
-              const QuickActionCard(
-                  icon: Icons.local_drink_outlined, label: 'Água +250ml'),
-              const QuickActionCard(
-                  icon: Icons.calendar_month, label: 'Plano semanal'),
-              const QuickActionCard(
-                  icon: Icons.shopping_basket_outlined, label: 'Lista compras'),
-              const QuickActionCard(
-                  icon: Icons.pie_chart_outline, label: 'Resumo'),
+                icon: Icons.local_drink_outlined,
+                label: 'Água +250ml',
+              ),
+
+              // Montar plano por IA (placeholder de navegação)
+              QuickActionCard(
+                icon: Icons.smart_toy_outlined,
+                label: 'Montar plano por IA',
+                onTap: () {
+                  // TODO: navegar para a tela/flow de IA
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Em breve: plano por IA')),
+                  );
+                },
+              ),
+
+              // Histórico (antes era "Resumo")
+              QuickActionCard(
+                icon: Icons.history,
+                label: 'Histórico',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HistoricoPage()),
+                  );
+                },
+              ),
             ]),
             const SizedBox(height: 16),
             Text('Hoje', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 6),
             if (snap.connectionState == ConnectionState.waiting)
               const Center(
-                  child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: CircularProgressIndicator()))
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: CircularProgressIndicator(),
+                ),
+              )
             else if (meals.isEmpty)
               const Text('Sem refeições ainda. Use "Nova refeição".')
             else
@@ -103,8 +136,12 @@ class MenuInicialPage extends StatelessWidget {
                       title: Text(m.name),
                       subtitle:
                           Text('${_fmtTime(m.date)} • ${m.items.length} itens'),
-                      trailing: Text('${m.totalKcal.toStringAsFixed(0)} kcal',
-                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                      trailing: Text(
+                        '${m.totalKcal.toStringAsFixed(0)} kcal',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      // se quiser abrir edição ao tocar:
+                      // onTap: () => Navigator.push(... EditMealView(meal: m)),
                     ),
                   )),
             const SizedBox(height: 80),

@@ -42,4 +42,39 @@ class UserViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> updateProfile({String? name, String? email}) async {
+    final fbUser = fb.FirebaseAuth.instance.currentUser;
+    if (fbUser == null) {
+      error = 'Sem usuário autenticado';
+      notifyListeners();
+      return;
+    }
+    loading = true;
+    error = null;
+    notifyListeners();
+    try {
+      final updated =
+          (user ?? AppUser(uid: fbUser.uid, name: null, email: null))
+              .copyWith(name: name ?? user?.name, email: email ?? user?.email);
+      await UserRepository.updateProfile(updated);
+      user = updated;
+
+      // (opcional) refletir no FirebaseAuth (displayName e e-mail)
+      if (name != null && name.trim().isNotEmpty) {
+        await fbUser.updateDisplayName(name.trim());
+      }
+      if (email != null &&
+          email.trim().isNotEmpty &&
+          email.trim() != fbUser.email) {
+        // Em apps reais, prefira verifyBeforeUpdateEmail para segurança
+        await fbUser.verifyBeforeUpdateEmail(email.trim());
+      }
+    } catch (e) {
+      error = 'Erro ao atualizar perfil';
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
 }
