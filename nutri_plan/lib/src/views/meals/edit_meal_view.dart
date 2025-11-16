@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/meal_repository.dart';
 import '../../models/meal.dart';
 import '../../models/meal_item.dart';
@@ -68,16 +67,23 @@ class _EditMealPageState extends State<_EditMealPage> {
                 ? null
                 : () async {
                     final d = await showDatePicker(
-                        context: context,
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime(2100),
-                        initialDate: vm.date);
+                      context: context,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2100),
+                      initialDate: vm.date,
+                    );
                     if (d == null) return;
                     final t = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.fromDateTime(vm.date));
+                      context: context,
+                      initialTime: TimeOfDay.fromDateTime(vm.date),
+                    );
                     vm.setDate(DateTime(
-                        d.year, d.month, d.day, t?.hour ?? 12, t?.minute ?? 0));
+                      d.year,
+                      d.month,
+                      d.day,
+                      t?.hour ?? 12,
+                      t?.minute ?? 0,
+                    ));
                   },
           ),
           const SizedBox(height: 12),
@@ -91,7 +97,24 @@ class _EditMealPageState extends State<_EditMealPage> {
                     leading: const Icon(Icons.fastfood),
                     title: Text(e.value.food),
                     subtitle: Text(
-                        '${e.value.quantity} ${e.value.unit} • ${e.value.kcal.toStringAsFixed(0)} kcal'),
+                      '${e.value.quantity} ${e.value.unit} • ${e.value.kcal.toStringAsFixed(0)} kcal',
+                    ),
+                    onTap: vm.saving
+                        ? null
+                        : () async {
+                            // mesma telinha, pré-preenchida para editar
+                            final edited = await showDialog<MealItem>(
+                              context: context,
+                              builder: (_) => _ItemDialog(initial: e.value),
+                            );
+                            if (edited != null && context.mounted) {
+                              vm.updateItem(e.key, edited);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Item atualizado.')),
+                              );
+                            }
+                          },
                     trailing: IconButton(
                       icon: const Icon(Icons.delete_outline),
                       onPressed: vm.saving ? null : () => vm.removeItem(e.key),
@@ -103,9 +126,11 @@ class _EditMealPageState extends State<_EditMealPage> {
             onPressed: vm.saving
                 ? null
                 : () async {
+                    // mesma telinha, sem initial => adiciona
                     final item = await showDialog<MealItem>(
-                        context: context,
-                        builder: (_) => const _AddItemDialog());
+                      context: context,
+                      builder: (_) => const _ItemDialog(),
+                    );
                     if (item != null) vm.addItem(item);
                   },
             icon: const Icon(Icons.add),
@@ -124,18 +149,21 @@ class _EditMealPageState extends State<_EditMealPage> {
                     if (!mounted) return;
                     if (ok) {
                       Navigator.pop(context, true);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('Refeição atualizada.')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Refeição atualizada.')),
+                      );
                     } else if (vm.error != null) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(vm.error!)));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(vm.error!)),
+                      );
                     }
                   },
             icon: vm.saving
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.check),
             label: Text(vm.saving ? 'Salvando...' : 'Salvar alterações'),
           ),
@@ -190,6 +218,13 @@ class _MealEditVM extends ChangeNotifier {
     notifyListeners();
   }
 
+  // << novo: atualização de item >>
+  void updateItem(int index, MealItem item) {
+    if (index < 0 || index >= items.length) return;
+    items[index] = item;
+    notifyListeners();
+  }
+
   Future<bool> save() async {
     if (name.trim().isEmpty) {
       error = 'Informe o nome';
@@ -207,11 +242,12 @@ class _MealEditVM extends ChangeNotifier {
     notifyListeners();
     try {
       final updated = Meal(
-          id: mealId,
-          userId: uid,
-          name: name.trim(),
-          date: date,
-          items: List.of(items));
+        id: mealId,
+        userId: uid,
+        name: name.trim(),
+        date: date,
+        items: List.of(items),
+      );
       await MealRepository.update(uid, mealId, updated);
       saving = false;
       notifyListeners();
@@ -225,23 +261,36 @@ class _MealEditVM extends ChangeNotifier {
   }
 }
 
-// ---------- Diálogo para adicionar item ----------
-class _AddItemDialog extends StatefulWidget {
-  const _AddItemDialog();
+class _ItemDialog extends StatefulWidget {
+  final MealItem? initial;
+  const _ItemDialog({this.initial});
 
   @override
-  State<_AddItemDialog> createState() => _AddItemDialogState();
+  State<_ItemDialog> createState() => _ItemDialogState();
 }
 
-class _AddItemDialogState extends State<_AddItemDialog> {
+class _ItemDialogState extends State<_ItemDialog> {
   final _f = GlobalKey<FormState>();
-  final _food = TextEditingController();
-  final _qty = TextEditingController(text: '100');
-  final _unit = TextEditingController(text: 'g');
-  final _kcal = TextEditingController(text: '0');
-  final _protein = TextEditingController(text: '0');
-  final _carbs = TextEditingController(text: '0');
-  final _fat = TextEditingController(text: '0');
+  late final TextEditingController _food;
+  late final TextEditingController _qty;
+  late final TextEditingController _unit;
+  late final TextEditingController _kcal;
+  late final TextEditingController _protein;
+  late final TextEditingController _carbs;
+  late final TextEditingController _fat;
+
+  @override
+  void initState() {
+    super.initState();
+    final i = widget.initial;
+    _food = TextEditingController(text: i?.food ?? '');
+    _qty = TextEditingController(text: (i?.quantity ?? 100).toString());
+    _unit = TextEditingController(text: i?.unit ?? 'g');
+    _kcal = TextEditingController(text: (i?.kcal ?? 0).toString());
+    _protein = TextEditingController(text: (i?.protein ?? 0).toString());
+    _carbs = TextEditingController(text: (i?.carbs ?? 0).toString());
+    _fat = TextEditingController(text: (i?.fat ?? 0).toString());
+  }
 
   @override
   void dispose() {
@@ -257,66 +306,79 @@ class _AddItemDialogState extends State<_AddItemDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.initial != null;
+
     return AlertDialog(
-      title: const Text('Adicionar item'),
+      title: Text(isEdit ? 'Editar item' : 'Adicionar item'),
       content: Form(
         key: _f,
         child: SingleChildScrollView(
           child: Column(children: [
             TextFormField(
-                controller: _food,
-                decoration: const InputDecoration(labelText: 'Alimento'),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Obrigatório' : null),
+              controller: _food,
+              decoration: const InputDecoration(labelText: 'Alimento'),
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
+            ),
             Row(children: [
               Expanded(
-                  child: TextFormField(
-                      controller: _qty,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Qtd'))),
+                child: TextFormField(
+                  controller: _qty,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Qtd'),
+                ),
+              ),
               const SizedBox(width: 8),
               SizedBox(
-                  width: 80,
-                  child: TextFormField(
-                      controller: _unit,
-                      decoration: const InputDecoration(labelText: 'Unid'))),
+                width: 80,
+                child: TextFormField(
+                  controller: _unit,
+                  decoration: const InputDecoration(labelText: 'Unid'),
+                ),
+              ),
             ]),
             Row(children: [
               Expanded(
-                  child: TextFormField(
-                      controller: _kcal,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Kcal'))),
+                child: TextFormField(
+                  controller: _kcal,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Kcal'),
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
-                  child: TextFormField(
-                      controller: _protein,
-                      keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Prot (g)'))),
+                child: TextFormField(
+                  controller: _protein,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Prot (g)'),
+                ),
+              ),
             ]),
             Row(children: [
               Expanded(
-                  child: TextFormField(
-                      controller: _carbs,
-                      keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Carb (g)'))),
+                child: TextFormField(
+                  controller: _carbs,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Carb (g)'),
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
-                  child: TextFormField(
-                      controller: _fat,
-                      keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Gord (g)'))),
+                child: TextFormField(
+                  controller: _fat,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Gord (g)'),
+                ),
+              ),
             ]),
           ]),
         ),
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar')),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
         FilledButton(
           onPressed: () {
             if (!_f.currentState!.validate()) return;
@@ -331,7 +393,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
             );
             Navigator.pop(context, item);
           },
-          child: const Text('Adicionar'),
+          child: Text(isEdit ? 'Salvar' : 'Adicionar'),
         ),
       ],
     );

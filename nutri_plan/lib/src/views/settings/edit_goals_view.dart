@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/settings_repository.dart';
 import '../../models/user_goals.dart';
+import '../home/home_view.dart';
 
 class EditGoalsView extends StatefulWidget {
   const EditGoalsView({super.key});
@@ -26,6 +28,12 @@ class _EditGoalsViewState extends State<EditGoalsView> {
       _carb.text = g.carbs.toStringAsFixed(0);
       _fat.text = g.fat.toStringAsFixed(0);
       if (mounted) setState(() => _loading = false);
+    }).catchError((e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Falha ao carregar metas: $e')),
+      );
     });
   }
 
@@ -45,15 +53,35 @@ class _EditGoalsViewState extends State<EditGoalsView> {
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: () async {
-                    final uid = FirebaseAuth.instance.currentUser!.uid;
-                    final g = UserGoals(
-                      kcal: double.tryParse(_kcal.text) ?? 0,
-                      protein: double.tryParse(_prot.text) ?? 0,
-                      carbs: double.tryParse(_carb.text) ?? 0,
-                      fat: double.tryParse(_fat.text) ?? 0,
-                    );
-                    await SettingsRepository.saveGoals(uid, g);
-                    if (mounted) Navigator.pop(context);
+                    try {
+                      final uid = FirebaseAuth.instance.currentUser!.uid;
+                      final g = UserGoals(
+                        kcal: double.tryParse(_kcal.text) ?? 0,
+                        protein: double.tryParse(_prot.text) ?? 0,
+                        carbs: double.tryParse(_carb.text) ?? 0,
+                        fat: double.tryParse(_fat.text) ?? 0,
+                      );
+                      await SettingsRepository.saveGoals(uid, g);
+
+                      if (!mounted) return;
+
+                      Navigator.of(context, rootNavigator: true)
+                          .pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (_) => const HomeView(
+                            initialIndex: 0,
+                            key: ValueKey(
+                                'home-index-0'), // força rebuild da Home
+                          ),
+                        ),
+                        (route) => false,
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Erro ao salvar metas: $e')),
+                      );
+                    }
                   },
                   child: const Text('Salvar'),
                 ),
@@ -63,7 +91,8 @@ class _EditGoalsViewState extends State<EditGoalsView> {
   }
 
   Widget _numField(TextEditingController c, String label) => TextField(
-      controller: c,
-      decoration: InputDecoration(labelText: label),
-      keyboardType: TextInputType.number);
+        controller: c,
+        decoration: InputDecoration(labelText: label),
+        keyboardType: TextInputType.number,
+      );
 }

@@ -22,11 +22,11 @@ class UserGoals {
 
   factory UserGoals.fromJson(Map<String, dynamic>? m) {
     if (m == null) return defaults;
-    double _d(String k) => (m[k] is num) ? (m[k] as num).toDouble() : 0.0;
+    double d(String k) => (m[k] is num) ? (m[k] as num).toDouble() : 0.0;
     return UserGoals(
-        kcal: _d('kcal'),
-        protein: _d('protein'),
-        carbs: _d('carbs'),
-        fat: _d('fat'));
+        kcal: d('kcal'),
+        protein: d('protein'),
+        carbs: d('carbs'),
+        fat: d('fat'));
   }
 }

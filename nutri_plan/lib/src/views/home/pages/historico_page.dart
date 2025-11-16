@@ -104,7 +104,7 @@ class HistoricoPage extends StatelessWidget {
                             final max = kcalSeries.values
                                 .fold<double>(0, (a, b) => a > b ? a : b);
                             final ratio = max == 0 ? 0.0 : (e.value / max);
-                            final frac = ratio.clamp(0.0, 1.0) as double;
+                            final frac = ratio.clamp(0.0, 1.0);
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 4),
                               child: Row(children: [
@@ -115,8 +115,7 @@ class HistoricoPage extends StatelessWidget {
                                 const SizedBox(width: 8),
                                 SizedBox(
                                     width: 60,
-                                    child:
-                                        Text('${e.value.toStringAsFixed(0)}')),
+                                    child: Text(e.value.toStringAsFixed(0))),
                               ]),
                             );
                           }),

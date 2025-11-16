@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/meal_repository.dart';
 import '../models/meal.dart';
 import '../models/meal_item.dart';
@@ -9,13 +8,10 @@ import '../models/meal_item.dart';
 class MealViewModel extends ChangeNotifier {
   bool saving = false;
   String? error;
-
-  // Estado do formulário
   String name = 'Refeição';
   DateTime date = DateTime.now();
   final List<MealItem> items = [];
 
-  // Setters
   void setName(String v) {
     name = v;
     notifyListeners();
@@ -32,7 +28,14 @@ class MealViewModel extends ChangeNotifier {
   }
 
   void removeItem(int index) {
+    if (index < 0 || index >= items.length) return;
     items.removeAt(index);
+    notifyListeners();
+  }
+
+  void updateItem(int index, MealItem item) {
+    if (index < 0 || index >= items.length) return;
+    items[index] = item;
     notifyListeners();
   }
 
@@ -64,37 +67,29 @@ class MealViewModel extends ChangeNotifier {
     saving = true;
     error = null;
     notifyListeners();
-
     try {
       final meal = Meal(
         id: '',
-        userId: user.uid, // usado nas regras
+        userId: user.uid,
         name: name.trim(),
         date: date,
         items: List.of(items),
       );
-
       final id = await MealRepository.create(meal);
-
-      saving = false;
-      notifyListeners();
-      // opcional: limpar o formulário após salvar
       clear();
       return id;
     } on FirebaseException catch (e) {
-      // Log técnico p/ debug
       log('Meal save failed: code=${e.code} message=${e.message}',
           name: 'MealViewModel');
-      saving = false;
       error = _mapFsError(e);
-      notifyListeners();
       return null;
     } catch (e) {
       log('Meal save unknown error: $e', name: 'MealViewModel');
-      saving = false;
       error = 'Falha desconhecida ao salvar';
-      notifyListeners();
       return null;
+    } finally {
+      saving = false;
+      notifyListeners();
     }
   }
 

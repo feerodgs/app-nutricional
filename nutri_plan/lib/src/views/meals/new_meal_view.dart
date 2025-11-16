@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/meal_item.dart';
 import '../../viewmodels/meal_viewmodel.dart';
+import '../home/home_view.dart';
 
 class NewMealView extends StatelessWidget {
   const NewMealView({super.key});
@@ -113,8 +114,9 @@ class _NewMealPageState extends State<_NewMealPage> {
                       context: context,
                       builder: (_) => const _AddItemDialog(),
                     );
-                    if (item != null)
+                    if (item != null) {
                       context.read<MealViewModel>().addItem(item);
+                    }
                   },
             icon: const Icon(Icons.add),
             label: const Text('Adicionar item'),
@@ -128,24 +130,29 @@ class _NewMealPageState extends State<_NewMealPage> {
             onPressed: vm.saving
                 ? null
                 : () async {
-                    final id = await context.read<MealViewModel>().save();
+                    final vmLocal = context.read<MealViewModel>();
+                    final id = await vmLocal.save();
                     if (!mounted) return;
-                    final err = context.read<MealViewModel>().error;
-                    if (id == null && err != null) {
+
+                    if (id == null) {
+                      final msg = vmLocal.error ?? 'Falha ao salvar.';
                       ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(err)));
-                    } else if (id != null) {
-                      Navigator.pop(context, id); // volta imediatamente
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Refeição salva.')),
-                      );
+                          .showSnackBar(SnackBar(content: Text(msg)));
+                      return;
                     }
+
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                          builder: (_) => const HomeView(initialIndex: 1)),
+                      (_) => false,
+                    );
                   },
             icon: vm.saving
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.check),
             label: Text(vm.saving ? 'Salvando...' : 'Salvar refeição'),
           ),
@@ -262,8 +269,9 @@ class _AddItemDialogState extends State<_AddItemDialog> {
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar')),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
         FilledButton(
           onPressed: () {
             if (!_f.currentState!.validate()) return;

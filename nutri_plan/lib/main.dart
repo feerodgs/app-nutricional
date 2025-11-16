@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
@@ -22,9 +23,9 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => UserViewModel()),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: const Root(),
+        home: Root(),
       ),
     );
   }
@@ -34,16 +35,19 @@ class Root extends StatelessWidget {
   const Root({super.key});
   @override
   Widget build(BuildContext context) {
-    final auth = context.read<AuthViewModel>();
-    return StreamBuilder(
-      stream: auth.authState,
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      initialData: FirebaseAuth.instance.currentUser,
       builder: (context, snap) {
-        if (snap.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-              body: Center(child: CircularProgressIndicator()));
+        final localUser = snap.data;
+        if (localUser != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.read<UserViewModel>().loadCurrent();
+          });
         }
-        if (snap.data == null) return const SignInView();
-        return const HomeView();
+        return localUser == null
+            ? const SignInView()
+            : const HomeView(initialIndex: 0);
       },
     );
   }

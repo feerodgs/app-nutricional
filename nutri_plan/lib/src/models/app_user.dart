@@ -22,7 +22,7 @@ class AppUser {
       }..removeWhere((k, v) => v == null);
 
   factory AppUser.fromJson(Map<String, dynamic> map) {
-    DateTime? _toDate(dynamic v) {
+    DateTime? toDate(dynamic v) {
       if (v == null) return null;
       if (v is Timestamp) return v.toDate();
       if (v is DateTime) return v;
@@ -35,7 +35,7 @@ class AppUser {
       uid: map['uid'] as String,
       email: map['email'] as String?,
       name: map['name'] as String?,
-      lastUpdated: _toDate(map['lastUpdated']),
+      lastUpdated: toDate(map['lastUpdated']),
     );
   }
 

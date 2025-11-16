@@ -13,14 +13,6 @@ class ConfiguracoesPage extends StatefulWidget {
 }
 
 class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<UserViewModel>().loadCurrent(); // <- AQUI
-    });
-  }
-
   String _initials(String? name, String? email) {
     final base = (name?.trim().isNotEmpty == true ? name! : (email ?? ''))
         .replaceAll(RegExp(r'\s+'), ' ')
