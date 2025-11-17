@@ -4,10 +4,7 @@ import '../../../data/meal_repository.dart';
 import '../../../data/settings_repository.dart';
 import '../../../models/meal.dart';
 import '../../../models/user_goals.dart';
-import '../../meals/new_meal_view.dart';
 import '../../home/widgets/kpi_tile.dart';
-import '../../home/widgets/quick_action_card.dart';
-import './historico_page.dart';
 
 double _clamp01(double x) => x < 0 ? 0.0 : (x > 1 ? 1.0 : x);
 
@@ -20,13 +17,11 @@ class MenuInicialPage extends StatelessWidget {
     if (user == null) return const Center(child: Text('Faça login.'));
     final uid = user.uid;
 
-    // 1) Ouve metas do usuário
     return StreamBuilder<UserGoals>(
       stream: SettingsRepository.watchGoals(uid),
       builder: (context, gSnap) {
         final goals = gSnap.data ?? UserGoals.defaults;
 
-        // 2) Ouve refeições do dia
         return StreamBuilder<List<Meal>>(
           stream: MealRepository.watchAll(uid, day: DateTime.now()),
           initialData: const <Meal>[],
@@ -46,6 +41,8 @@ class MenuInicialPage extends StatelessWidget {
                 Text('Menu inicial',
                     style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 12),
+
+                // KPIs com metas do usuário
                 KpiTile(
                   title: 'Kcal restantes',
                   value: kcalLeft.toStringAsFixed(0),
@@ -75,48 +72,27 @@ class MenuInicialPage extends StatelessWidget {
                   subtitle: 'Meta: ${goals.fat.toStringAsFixed(0)}',
                   progress: goals.fat <= 0 ? 0 : _clamp01(totFat / goals.fat),
                 ),
-                const SizedBox(height: 8),
-                Text('Ações rápidas',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
-                Wrap(spacing: 12, runSpacing: 12, children: [
-                  QuickActionCard(
-                    icon: Icons.add,
-                    label: 'Nova refeição',
-                    onTap: () async {
-                      final id = await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const NewMealView()),
-                      );
-                      if (id != null && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Refeição salva.')),
-                        );
-                      }
-                    },
-                  ),
-                  QuickActionCard(
-                    icon: Icons.history,
-                    label: 'Histórico',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const HistoricoPage()),
-                      );
-                    },
-                  ),
-                  QuickActionCard(
-                    icon: Icons.settings,
-                    label: 'Metas do dia',
-                    onTap: () {
-                      Navigator.of(context).pushNamed('/editGoals');
-                    },
-                  ),
-                ]),
+
+                const SizedBox(height: 16),
+
+                // Botão único: Montar plano alimentar
+                FilledButton.icon(
+                  onPressed: () {
+                    // TODO: implementar navegação/fluxo de IA aqui
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Em breve: montar plano alimentar'),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.smart_toy_outlined),
+                  label: const Text('Montar plano alimentar'),
+                ),
+
                 const SizedBox(height: 16),
                 Text('Hoje', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 6),
+
                 if (snap.connectionState == ConnectionState.waiting)
                   const Center(
                     child: Padding(
@@ -125,7 +101,7 @@ class MenuInicialPage extends StatelessWidget {
                     ),
                   )
                 else if (meals.isEmpty)
-                  const Text('Sem refeições ainda. Use "Nova refeição".')
+                  const Text('Sem refeições ainda.')
                 else
                   ...meals.map((m) => Card(
                         child: ListTile(
@@ -139,6 +115,7 @@ class MenuInicialPage extends StatelessWidget {
                           ),
                         ),
                       )),
+
                 const SizedBox(height: 80),
               ],
             );
