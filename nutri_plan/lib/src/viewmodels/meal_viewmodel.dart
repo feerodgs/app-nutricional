@@ -74,6 +74,7 @@ class MealViewModel extends ChangeNotifier {
         name: name.trim(),
         date: date,
         items: List.of(items),
+        done: false,
       );
       final id = await MealRepository.create(meal);
       clear();

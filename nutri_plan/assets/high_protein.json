@@ -1,0 +1,62 @@
+{
+  "meals": [
+    {
+      "name": "Ovos mexidos com cottage",
+      "items": [
+        { "food": "Ovos", "quantity": 3, "unit": "un", "kcal": 210, "protein": 18, "carbs": 1, "fat": 15 },
+        { "food": "Queijo cottage", "quantity": 80, "unit": "g", "kcal": 72, "protein": 11, "carbs": 3, "fat": 1 }
+      ],
+      "tags": ["cafe", "alta-proteina"]
+    },
+    {
+      "name": "Smoothie proteico de morango",
+      "items": [
+        { "food": "Whey protein", "quantity": 30, "unit": "g", "kcal": 120, "protein": 24, "carbs": 3, "fat": 1 },
+        { "food": "Morango", "quantity": 80, "unit": "g", "kcal": 25, "protein": 1, "carbs": 6, "fat": 0 },
+        { "food": "Água", "quantity": 200, "unit": "ml", "kcal": 0, "protein": 0, "carbs": 0, "fat": 0 }
+      ],
+      "tags": ["cafe", "shake", "alta-proteina"]
+    },
+    {
+      "name": "Frango grelhado com brócolis",
+      "items": [
+        { "food": "Peito de frango grelhado", "quantity": 180, "unit": "g", "kcal": 198, "protein": 37, "carbs": 0, "fat": 4 },
+        { "food": "Brócolis cozido", "quantity": 120, "unit": "g", "kcal": 40, "protein": 3, "carbs": 8, "fat": 0 }
+      ],
+      "tags": ["almoco", "lowcarb", "alta-proteina"]
+    },
+    {
+      "name": "Carne magra com ovos cozidos",
+      "items": [
+        { "food": "Patinho moído refogado", "quantity": 150, "unit": "g", "kcal": 250, "protein": 31, "carbs": 0, "fat": 13 },
+        { "food": "Ovos cozidos", "quantity": 2, "unit": "un", "kcal": 140, "protein": 12, "carbs": 1, "fat": 10 }
+      ],
+      "tags": ["almoco", "jantar", "alta-proteina"]
+    },
+    {
+      "name": "Tilápia assada com aspargos",
+      "items": [
+        { "food": "Tilápia assada", "quantity": 170, "unit": "g", "kcal": 150, "protein": 34, "carbs": 0, "fat": 2 },
+        { "food": "Aspargos grelhados", "quantity": 100, "unit": "g", "kcal": 22, "protein": 2, "carbs": 4, "fat": 0 }
+      ],
+      "tags": ["jantar", "lowcarb", "alta-proteina"]
+    },
+    {
+      "name": "Omelete hiperproteico",
+      "items": [
+        { "food": "Ovos", "quantity": 2, "unit": "un", "kcal": 140, "protein": 12, "carbs": 1, "fat": 10 },
+        { "food": "Claras de ovo", "quantity": 100, "unit": "g", "kcal": 52, "protein": 11, "carbs": 1, "fat": 0 },
+        { "food": "Queijo minas light", "quantity": 40, "unit": "g", "kcal": 72, "protein": 6, "carbs": 0, "fat": 4 }
+      ],
+      "tags": ["cafe", "jantar", "alta-proteina"]
+    },
+    {
+      "name": "Atum com salada verde",
+      "items": [
+        { "food": "Atum em água", "quantity": 120, "unit": "g", "kcal": 132, "protein": 28, "carbs": 0, "fat": 1 },
+        { "food": "Salada verde", "quantity": 50, "unit": "g", "kcal": 9, "protein": 1, "carbs": 2, "fat": 0 }
+      ],
+      "tags": ["snack", "lowcarb", "alta-proteina"]
+    }
+  ]
+}

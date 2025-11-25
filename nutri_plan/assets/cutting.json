@@ -1,0 +1,47 @@
+{
+  "meals": [
+    {
+      "name": "Ovos mexidos com espinafre",
+      "items": [
+        { "food": "Ovos", "quantity": 2, "unit": "un", "kcal": 140, "protein": 12, "carbs": 1, "fat": 9 },
+        { "food": "Espinafre refogado", "quantity": 50, "unit": "g", "kcal": 12, "protein": 1, "carbs": 2, "fat": 0 }
+      ],
+      "tags": ["cafe", "low_carb", "high_protein"]
+    },
+    {
+      "name": "Iogurte natural com chia e morango",
+      "items": [
+        { "food": "Iogurte natural", "quantity": 120, "unit": "g", "kcal": 70, "protein": 7, "carbs": 5, "fat": 2 },
+        { "food": "Chia", "quantity": 10, "unit": "g", "kcal": 49, "protein": 2, "carbs": 4, "fat": 3 },
+        { "food": "Morango", "quantity": 60, "unit": "g", "kcal": 18, "protein": 0, "carbs": 4, "fat": 0 }
+      ],
+      "tags": ["cafe", "low_carb", "fibras"]
+    },
+    {
+      "name": "Frango grelhado com legumes",
+      "items": [
+        { "food": "Peito de frango grelhado", "quantity": 150, "unit": "g", "kcal": 165, "protein": 31, "carbs": 0, "fat": 3 },
+        { "food": "Brócolis cozido", "quantity": 100, "unit": "g", "kcal": 34, "protein": 3, "carbs": 6, "fat": 0 },
+        { "food": "Cenoura cozida", "quantity": 80, "unit": "g", "kcal": 33, "protein": 1, "carbs": 8, "fat": 0 }
+      ],
+      "tags": ["almoco", "jantar", "low_carb", "high_protein"]
+    },
+    {
+      "name": "Atum com salada verde",
+      "items": [
+        { "food": "Atum em água", "quantity": 120, "unit": "g", "kcal": 132, "protein": 28, "carbs": 0, "fat": 1 },
+        { "food": "Mix de folhas", "quantity": 50, "unit": "g", "kcal": 10, "protein": 1, "carbs": 2, "fat": 0 },
+        { "food": "Tomate", "quantity": 60, "unit": "g", "kcal": 11, "protein": 0, "carbs": 2, "fat": 0 }
+      ],
+      "tags": ["almoco", "jantar", "low_carb"]
+    },
+    {
+      "name": "Sopa low carb de abóbora com frango",
+      "items": [
+        { "food": "Abóbora cozida", "quantity": 200, "unit": "g", "kcal": 48, "protein": 1, "carbs": 12, "fat": 0 },
+        { "food": "Frango desfiado", "quantity": 80, "unit": "g", "kcal": 88, "protein": 17, "carbs": 0, "fat": 2 }
+      ],
+      "tags": ["jantar", "low_carb", "fibras"]
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "meals": [
+    {
+      "name": "Omelete simples com tomate",
+      "items": [
+        { "food": "Ovos", "quantity": 2, "unit": "un", "kcal": 140, "protein": 12, "carbs": 1, "fat": 10 },
+        { "food": "Tomate picado", "quantity": 60, "unit": "g", "kcal": 11, "protein": 1, "carbs": 3, "fat": 0 }
+      ],
+      "tags": ["cafe", "balanceado"]
+    },
+    {
+      "name": "Vitamina de banana com aveia",
+      "items": [
+        { "food": "Banana", "quantity": 80, "unit": "g", "kcal": 72, "protein": 1, "carbs": 19, "fat": 0 },
+        { "food": "Leite desnatado", "quantity": 200, "unit": "ml", "kcal": 74, "protein": 7, "carbs": 10, "fat": 0 },
+        { "food": "Aveia em flocos", "quantity": 20, "unit": "g", "kcal": 76, "protein": 3, "carbs": 13, "fat": 1 }
+      ],
+      "tags": ["cafe", "snack"]
+    },
+    {
+      "name": "Frango grelhado com arroz e legumes",
+      "items": [
+        { "food": "Peito de frango grelhado", "quantity": 150, "unit": "g", "kcal": 165, "protein": 31, "carbs": 0, "fat": 3 },
+        { "food": "Arroz branco cozido", "quantity": 150, "unit": "g", "kcal": 195, "protein": 4, "carbs": 43, "fat": 0 },
+        { "food": "Legumes refogados", "quantity": 100, "unit": "g", "kcal": 55, "protein": 2, "carbs": 8, "fat": 2 }
+      ],
+      "tags": ["almoco", "equilibrado"]
+    },
+    {
+      "name": "Carne cozida com mandioca",
+      "items": [
+        { "food": "Carne bovina cozida", "quantity": 150, "unit": "g", "kcal": 260, "protein": 28, "carbs": 0, "fat": 16 },
+        { "food": "Mandioca cozida", "quantity": 120, "unit": "g", "kcal": 150, "protein": 1, "carbs": 36, "fat": 0 }
+      ],
+      "tags": ["almoco", "jantar", "balanceado"]
+    },
+    {
+      "name": "Tilápia grelhada com purê de batata",
+      "items": [
+        { "food": "Tilápia grelhada", "quantity": 150, "unit": "g", "kcal": 135, "protein": 28, "carbs": 0, "fat": 2 },
+        { "food": "Purê de batata", "quantity": 150, "unit": "g", "kcal": 145, "protein": 3, "carbs": 21, "fat": 4 }
+      ],
+      "tags": ["jantar", "leve"]
+    },
+    {
+      "name": "Wrap de frango com salada",
+      "items": [
+        { "food": "Tortilha integral", "quantity": 1, "unit": "un", "kcal": 110, "protein": 4, "carbs": 18, "fat": 3 },
+        { "food": "Peito de frango desfiado", "quantity": 100, "unit": "g", "kcal": 110, "protein": 23, "carbs": 0, "fat": 1 },
+        { "food": "Salada (alface e tomate)", "quantity": 40, "unit": "g", "kcal": 10, "protein": 0, "carbs": 2, "fat": 0 }
+      ],
+      "tags": ["snack", "lanche", "leve"]
+    },
+    {
+      "name": "Iogurte com granola light",
+      "items": [
+        { "food": "Iogurte natural", "quantity": 170, "unit": "g", "kcal": 95, "protein": 7, "carbs": 12, "fat": 2 },
+        { "food": "Granola light", "quantity": 30, "unit": "g", "kcal": 110, "protein": 3, "carbs": 18, "fat": 2 }
+      ],
+      "tags": ["snack", "balanceado"]
+    }
+  ]
+}

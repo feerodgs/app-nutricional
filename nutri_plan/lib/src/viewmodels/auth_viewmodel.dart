@@ -2,11 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../data/user_repository.dart';
+
 enum AuthStatus { idle, loading }
 
 class AuthViewModel extends ChangeNotifier {
   final _auth = FirebaseAuth.instance;
-  final _db = FirebaseFirestore.instance;
 
   AuthStatus status = AuthStatus.idle;
   String? error;
@@ -15,15 +16,19 @@ class AuthViewModel extends ChangeNotifier {
   bool get loading => status == AuthStatus.loading;
 
   Future<void> signInWithEmail(String email, String password) async {
-    if (status == AuthStatus.loading) return;
+    if (loading) return;
+
     status = AuthStatus.loading;
     error = null;
     notifyListeners();
+
     try {
-      await _auth.signInWithEmailAndPassword(
+      final cred = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
+
+      await UserRepository.ensureUserDocument(cred.user!);
     } on FirebaseAuthException catch (e) {
       error = _map(e);
     } catch (_) {
@@ -36,14 +41,17 @@ class AuthViewModel extends ChangeNotifier {
 
   Future<void> signUp(String email, String password, {String? name}) async {
     if (loading) return;
+
     status = AuthStatus.loading;
     error = null;
     notifyListeners();
+
     try {
       final cred = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password.trim(),
       );
+
       final u = cred.user;
       if (u == null) throw FirebaseAuthException(code: 'user-null');
 
@@ -51,14 +59,16 @@ class AuthViewModel extends ChangeNotifier {
         await u.updateDisplayName(name!.trim());
       }
 
-      await _db.collection('users').doc(u.uid).set({
-        'uid': u.uid,
-        'name': (name ?? '').trim(),
+      await UserRepository.ensureUserDocument(u);
+
+      await UserRepository.updateFields(u.uid, {
+        'name': name ?? '',
         'email': u.email,
+        'finishedOnboarding': false,
         'createdAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      });
     } on FirebaseAuthException catch (e) {
-      error = _map(e); // mapeia email-already-in-use, weak-password, etc.
+      error = _map(e);
     } catch (_) {
       error = 'Falha inesperada no cadastro';
     } finally {
@@ -68,10 +78,12 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    if (status == AuthStatus.loading) return;
+    if (loading) return;
+
     status = AuthStatus.loading;
     error = null;
     notifyListeners();
+
     try {
       await _auth.signOut();
     } catch (_) {
@@ -89,7 +101,7 @@ class AuthViewModel extends ChangeNotifier {
       case 'email-already-in-use':
         return 'E-mail já cadastrado';
       case 'weak-password':
-        return 'Senha fraca (mín. 6 caracteres)';
+        return 'Senha fraca (mínimo 6 caracteres)';
       case 'user-disabled':
         return 'Usuário desativado';
       case 'user-not-found':

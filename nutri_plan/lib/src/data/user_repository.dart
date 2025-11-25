@@ -4,13 +4,13 @@ import '../models/app_user.dart';
 
 class UserRepository {
   static final _db = FirebaseFirestore.instance;
+
   static CollectionReference<Map<String, dynamic>> get _col =>
       _db.collection('users');
 
   static DocumentReference<Map<String, dynamic>> docRef(String uid) =>
       _col.doc(uid);
 
-  /// Cria/atualiza o documento do usuário autenticado.
   static Future<void> ensureUserDocument(fb.User fbUser) async {
     final ref = docRef(fbUser.uid);
     final snap = await ref.get();
@@ -22,10 +22,14 @@ class UserRepository {
         email: fbUser.email,
         name: fbUser.displayName,
         lastUpdated: now,
+        finishedOnboarding: false,
       );
       await ref.set(appUser.toJson(), SetOptions(merge: true));
     } else {
-      await ref.set({'lastUpdated': now}, SetOptions(merge: true));
+      await ref.set({
+        'lastUpdated': now,
+        'finishedOnboarding': snap.data()?['finishedOnboarding'] ?? false,
+      }, SetOptions(merge: true));
     }
   }
 
@@ -49,7 +53,10 @@ class UserRepository {
   }
 
   static Future<void> upsert(AppUser user) async {
-    await docRef(user.uid).set(user.toJson(), SetOptions(merge: true));
+    await docRef(user.uid).set(
+      user.toJson(),
+      SetOptions(merge: true),
+    );
   }
 
   static Future<void> updateProfile(AppUser user) => upsert(user);
@@ -60,8 +67,20 @@ class UserRepository {
     await docRef(uid).set(data, SetOptions(merge: true));
   }
 
-  // Opcional: evitar deletes de conta por segurança/regra.
   static Future<void> softDelete(String uid) async {
     await updateFields(uid, {'active': false});
+  }
+
+  static Future<void> saveOnboardingData(
+      String uid, Map<String, dynamic> data) async {
+    data['lastUpdated'] = DateTime.now();
+    await docRef(uid).set(data, SetOptions(merge: true));
+  }
+
+  static Future<void> finishOnboarding(String uid) async {
+    await docRef(uid).set(
+      {'finishedOnboarding': true},
+      SetOptions(merge: true),
+    );
   }
 }

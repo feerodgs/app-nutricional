@@ -16,7 +16,7 @@ class HistoryViewModel extends ChangeNotifier {
   bool loading = false;
   String? error;
 
-  StreamSubscription<List<Meal>>? _sub; // <- controla o stream
+  StreamSubscription<List<Meal>>? _sub;
 
   void setRange(HistoryQuickRange r) {
     range = r;
@@ -68,31 +68,41 @@ class HistoryViewModel extends ChangeNotifier {
       return;
     }
 
-    // cancela o listener anterior antes de abrir outro
     await _sub?.cancel();
     loading = true;
     error = null;
     notifyListeners();
 
     final w = _calcWindow();
-    _sub =
-        MealRepository.watchRangeHistory(u.uid, w.start, w.end).listen((list) {
-      final q = query.toLowerCase();
-      meals = q.isEmpty
-          ? list
-          : list.where((m) => m.name.toLowerCase().contains(q)).toList();
-      loading = false;
-      notifyListeners();
-    }, onError: (e) {
-      error = 'Erro ao carregar';
-      loading = false;
-      notifyListeners();
-    });
+
+    _sub = MealRepository.watchRangeHistory(u.uid, w.start, w.end).listen(
+      (list) {
+        final q = query.toLowerCase();
+
+        // FILTRA SOMENTE REFEIÇÕES CONCLUÍDAS
+        final doneMeals = list.where((m) => m.done == true).toList();
+
+        meals = q.isEmpty
+            ? doneMeals
+            : doneMeals.where((m) => m.name.toLowerCase().contains(q)).toList();
+
+        loading = false;
+        notifyListeners();
+      },
+      onError: (e) {
+        error = 'Erro ao carregar';
+        loading = false;
+        notifyListeners();
+      },
+    );
   }
 
   double get totKcal => meals.fold(0, (a, m) => a + m.totalKcal);
+
   double get totProt => meals.fold(0, (a, m) => a + m.totalProtein);
+
   double get totCarb => meals.fold(0, (a, m) => a + m.totalCarbs);
+
   double get totFat => meals.fold(0, (a, m) => a + m.totalFat);
 
   Map<DateTime, double> kcalByDay() {

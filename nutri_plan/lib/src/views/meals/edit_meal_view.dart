@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/meal_repository.dart';
@@ -102,7 +103,6 @@ class _EditMealPageState extends State<_EditMealPage> {
                     onTap: vm.saving
                         ? null
                         : () async {
-                            // mesma telinha, pré-preenchida para editar
                             final edited = await showDialog<MealItem>(
                               context: context,
                               builder: (_) => _ItemDialog(initial: e.value),
@@ -126,7 +126,6 @@ class _EditMealPageState extends State<_EditMealPage> {
             onPressed: vm.saving
                 ? null
                 : () async {
-                    // mesma telinha, sem initial => adiciona
                     final item = await showDialog<MealItem>(
                       context: context,
                       builder: (_) => const _ItemDialog(),
@@ -135,6 +134,12 @@ class _EditMealPageState extends State<_EditMealPage> {
                   },
             icon: const Icon(Icons.add),
             label: const Text('Adicionar item'),
+          ),
+          const SizedBox(height: 12),
+          SwitchListTile(
+            value: vm.done,
+            title: const Text("Refeição concluída"),
+            onChanged: vm.saving ? null : vm.setDone,
           ),
           if (vm.error != null) ...[
             const SizedBox(height: 8),
@@ -179,7 +184,6 @@ class _EditMealPageState extends State<_EditMealPage> {
   }
 }
 
-// ---------- VM local de edição ----------
 class _MealEditVM extends ChangeNotifier {
   final String mealId;
   final String uid;
@@ -187,6 +191,7 @@ class _MealEditVM extends ChangeNotifier {
   String name;
   DateTime date;
   final List<MealItem> items;
+  bool done;
 
   bool saving = false;
   String? error;
@@ -196,7 +201,8 @@ class _MealEditVM extends ChangeNotifier {
         uid = m.userId,
         name = m.name,
         date = m.date,
-        items = List<MealItem>.from(m.items);
+        items = List<MealItem>.from(m.items),
+        done = m.done;
 
   void setName(String v) {
     name = v;
@@ -205,6 +211,11 @@ class _MealEditVM extends ChangeNotifier {
 
   void setDate(DateTime v) {
     date = v;
+    notifyListeners();
+  }
+
+  void setDone(bool v) {
+    done = v;
     notifyListeners();
   }
 
@@ -218,7 +229,6 @@ class _MealEditVM extends ChangeNotifier {
     notifyListeners();
   }
 
-  // << novo: atualização de item >>
   void updateItem(int index, MealItem item) {
     if (index < 0 || index >= items.length) return;
     items[index] = item;
@@ -240,15 +250,17 @@ class _MealEditVM extends ChangeNotifier {
     saving = true;
     error = null;
     notifyListeners();
+
     try {
-      final updated = Meal(
-        id: mealId,
-        userId: uid,
-        name: name.trim(),
-        date: date,
-        items: List.of(items),
-      );
+      final updated = {
+        'name': name.trim(),
+        'date': Timestamp.fromDate(date),
+        'items': items.map((e) => e.toJson()).toList(),
+        'done': done,
+      };
+
       await MealRepository.update(uid, mealId, updated);
+
       saving = false;
       notifyListeners();
       return true;
@@ -313,65 +325,73 @@ class _ItemDialogState extends State<_ItemDialog> {
       content: Form(
         key: _f,
         child: SingleChildScrollView(
-          child: Column(children: [
-            TextFormField(
-              controller: _food,
-              decoration: const InputDecoration(labelText: 'Alimento'),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
-            ),
-            Row(children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _qty,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Qtd'),
-                ),
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _food,
+                decoration: const InputDecoration(labelText: 'Alimento'),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
               ),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 80,
-                child: TextFormField(
-                  controller: _unit,
-                  decoration: const InputDecoration(labelText: 'Unid'),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _qty,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Qtd'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 80,
+                    child: TextFormField(
+                      controller: _unit,
+                      decoration: const InputDecoration(labelText: 'Unid'),
+                    ),
+                  ),
+                ],
               ),
-            ]),
-            Row(children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _kcal,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Kcal'),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _kcal,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Kcal'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _protein,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Prot (g)'),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextFormField(
-                  controller: _protein,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Prot (g)'),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _carbs,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Carb (g)'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _fat,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Gord (g)'),
+                    ),
+                  ),
+                ],
               ),
-            ]),
-            Row(children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _carbs,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Carb (g)'),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextFormField(
-                  controller: _fat,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Gord (g)'),
-                ),
-              ),
-            ]),
-          ]),
+            ],
+          ),
         ),
       ),
       actions: [

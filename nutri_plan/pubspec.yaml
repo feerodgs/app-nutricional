@@ -1,11 +1,10 @@
 name: nutri_plan
 description: "A new Flutter project."
-publish_to: 'none' # Remove esta linha se quiser publicar no pub.dev
+publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
-  # Compatível com versões mais recentes dos pacotes Firebase
   sdk: '>=3.3.3 <4.0.0'
 
 dependencies:
@@ -13,23 +12,26 @@ dependencies:
     sdk: flutter
   provider: ^6.1.2
 
-  # --- PACOTES DO FIREBASE (VERSÕES ATUALIZADAS) ---
+  # --- PACOTES DO FIREBASE ---
   firebase_core: ^3.1.1
   firebase_auth: ^5.1.1
   cloud_firestore: ^5.0.2
   firebase_storage: ^12.1.0
 
-  # --- PACOTES PARA LOGIN SOCIAL ---
+  # --- LOGIN SOCIAL ---
   google_sign_in: ^6.2.1
   flutter_facebook_auth: ^7.0.0
 
-  # --- PACOTES DE UTILIDADES ---
-  shared_preferences: ^2.2.3       # Armazenar preferências locais
-  image_picker: ^1.1.2             # Capturar imagens
-  font_awesome_flutter: ^10.7.0    # Ícones de marcas (Google, Facebook, etc.)
-
-  # Ícones iOS padrão
+  # --- UTILIDADES ---
+  shared_preferences: ^2.2.3
+  image_picker: ^1.1.2
+  font_awesome_flutter: ^10.7.0
   cupertino_icons: ^1.0.8
+
+  # --- NOTIFICAÇÕES ---
+  flutter_local_notifications: ^17.1.2
+  firebase_messaging: ^15.0.1
+  timezone: ^0.9.3
 
 dev_dependencies:
   flutter_test:
@@ -39,6 +41,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # --- DECLARAÇÃO DE ASSETS ---
   assets:
-    - assets/
+    - assets/meals.json

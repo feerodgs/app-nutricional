@@ -1,0 +1,57 @@
+{
+  "meals": [
+    {
+      "name": "Omelete proteico com batata doce",
+      "items": [
+        { "food": "Ovos", "quantity": 3, "unit": "un", "kcal": 210, "protein": 18, "carbs": 1, "fat": 15 },
+        { "food": "Claras de ovo", "quantity": 2, "unit": "un", "kcal": 34, "protein": 7, "carbs": 0, "fat": 0 },
+        { "food": "Batata doce cozida", "quantity": 120, "unit": "g", "kcal": 114, "protein": 2, "carbs": 27, "fat": 0 }
+      ],
+      "tags": ["cafe", "bulking", "high_protein"]
+    },
+    {
+      "name": "Iogurte grego com aveia e banana",
+      "items": [
+        { "food": "Iogurte grego natural", "quantity": 150, "unit": "g", "kcal": 146, "protein": 13, "carbs": 6, "fat": 7 },
+        { "food": "Aveia em flocos", "quantity": 40, "unit": "g", "kcal": 152, "protein": 5, "carbs": 26, "fat": 3 },
+        { "food": "Banana", "quantity": 80, "unit": "g", "kcal": 72, "protein": 1, "carbs": 19, "fat": 0 }
+      ],
+      "tags": ["cafe", "snack", "carb_load"]
+    },
+    {
+      "name": "Arroz, frango e abacate",
+      "items": [
+        { "food": "Peito de frango grelhado", "quantity": 180, "unit": "g", "kcal": 198, "protein": 37, "carbs": 0, "fat": 4 },
+        { "food": "Arroz branco cozido", "quantity": 200, "unit": "g", "kcal": 260, "protein": 5, "carbs": 57, "fat": 1 },
+        { "food": "Abacate", "quantity": 80, "unit": "g", "kcal": 128, "protein": 1, "carbs": 5, "fat": 12 }
+      ],
+      "tags": ["almoco", "high_carb", "high_protein"]
+    },
+    {
+      "name": "Carne moída com macarrão integral",
+      "items": [
+        { "food": "Carne moída magra", "quantity": 150, "unit": "g", "kcal": 242, "protein": 26, "carbs": 0, "fat": 15 },
+        { "food": "Macarrão integral cozido", "quantity": 180, "unit": "g", "kcal": 230, "protein": 8, "carbs": 45, "fat": 1 }
+      ],
+      "tags": ["almoco", "jantar", "bulking"]
+    },
+    {
+      "name": "Salmão grelhado com arroz e brócolis",
+      "items": [
+        { "food": "Salmão grelhado", "quantity": 150, "unit": "g", "kcal": 280, "protein": 29, "carbs": 0, "fat": 18 },
+        { "food": "Arroz branco", "quantity": 180, "unit": "g", "kcal": 234, "protein": 4, "carbs": 51, "fat": 0 },
+        { "food": "Brócolis", "quantity": 100, "unit": "g", "kcal": 34, "protein": 3, "carbs": 6, "fat": 0 }
+      ],
+      "tags": ["jantar", "gordura_boa", "high_protein"]
+    },
+    {
+      "name": "Sanduíche natural de atum",
+      "items": [
+        { "food": "Pão integral", "quantity": 2, "unit": "fatias", "kcal": 140, "protein": 6, "carbs": 24, "fat": 2 },
+        { "food": "Atum em água", "quantity": 100, "unit": "g", "kcal": 110, "protein": 23, "carbs": 0, "fat": 1 },
+        { "food": "Requeijão light", "quantity": 20, "unit": "g", "kcal": 24, "protein": 2, "carbs": 1, "fat": 2 }
+      ],
+      "tags": ["snack", "pratico", "lean_bulk"]
+    }
+  ]
+}

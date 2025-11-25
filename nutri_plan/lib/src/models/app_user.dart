@@ -4,14 +4,17 @@ class AppUser {
   final String uid;
   final String? email;
   final String? name;
-
   final DateTime? lastUpdated;
+
+  /// novo campo
+  final bool finishedOnboarding;
 
   const AppUser({
     required this.uid,
     this.email,
     this.name,
     this.lastUpdated,
+    this.finishedOnboarding = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -19,6 +22,7 @@ class AppUser {
         'email': email,
         'name': name,
         'lastUpdated': lastUpdated?.toUtc(),
+        'finishedOnboarding': finishedOnboarding,
       }..removeWhere((k, v) => v == null);
 
   factory AppUser.fromJson(Map<String, dynamic> map) {
@@ -36,6 +40,7 @@ class AppUser {
       email: map['email'] as String?,
       name: map['name'] as String?,
       lastUpdated: toDate(map['lastUpdated']),
+      finishedOnboarding: map['finishedOnboarding'] == true,
     );
   }
 
@@ -43,38 +48,14 @@ class AppUser {
     String? email,
     String? name,
     DateTime? lastUpdated,
+    bool? finishedOnboarding,
   }) {
     return AppUser(
       uid: uid,
       email: email ?? this.email,
       name: name ?? this.name,
-      lastUpdated: lastUpdated ?? DateTime.now(),
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+      finishedOnboarding: finishedOnboarding ?? this.finishedOnboarding,
     );
   }
-
-  @override
-  String toString() =>
-      'AppUser(uid: $uid, email: $email, name: $name, lastUpdated: $lastUpdated)';
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is AppUser &&
-          runtimeType == other.runtimeType &&
-          uid == other.uid &&
-          email == other.email &&
-          name == other.name &&
-          lastUpdated == other.lastUpdated;
-
-  @override
-  int get hashCode => Object.hash(uid, email, name, lastUpdated);
-
-  // Opcional: fábrica para adaptar de uma "tabela/DTO" externo.
-  // Ajuste o tipo UserTableData conforme seu datasource/ORM.
-  // factory AppUser.fromUserTableData(UserTableData row) => AppUser(
-  //   uid: row.uid,
-  //   email: row.email,
-  //   name: row.name,
-  //   lastUpdated: row.lastUpdated,
-  // );
 }

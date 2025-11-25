@@ -16,6 +16,8 @@ class _EditGoalsViewState extends State<EditGoalsView> {
   final _carb = TextEditingController();
   final _fat = TextEditingController();
 
+  String _goalType = "maintenance";
+
   bool _loading = true;
   bool _saving = false;
 
@@ -40,38 +42,11 @@ class _EditGoalsViewState extends State<EditGoalsView> {
       final g = await SettingsRepository.getGoals(uid);
       _fill(g);
       if (mounted) setState(() => _loading = false);
-    } on FirebaseException catch (e) {
-      // offline/instável -> retry simples
-      if (e.code == 'unavailable') {
-        await Future.delayed(const Duration(milliseconds: 800));
-        try {
-          final g2 = await SettingsRepository.getGoals(uid);
-          _fill(g2);
-        } catch (_) {
-          _fill(UserGoals.defaults);
-          if (mounted) {
-            setState(() => _loading = false);
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text('Rede instável. Usando metas padrão.'),
-            ));
-          }
-          return;
-        }
-        if (mounted) setState(() => _loading = false);
-      } else {
-        if (mounted) {
-          setState(() => _loading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Falha ao carregar metas: ${e.code}')),
-          );
-        }
+    } catch (_) {
+      if (mounted) {
+        _fill(UserGoals.defaults);
+        setState(() => _loading = false);
       }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Falha ao carregar metas: $e')),
-      );
     }
   }
 
@@ -80,24 +55,28 @@ class _EditGoalsViewState extends State<EditGoalsView> {
     _prot.text = g.protein.toStringAsFixed(0);
     _carb.text = g.carbs.toStringAsFixed(0);
     _fat.text = g.fat.toStringAsFixed(0);
+    _goalType = g.goalType;
   }
 
   Future<void> _save() async {
     FocusScope.of(context).unfocus();
     setState(() => _saving = true);
+
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
+
       final g = UserGoals(
         kcal: double.tryParse(_kcal.text.replaceAll(',', '.')) ?? 0,
         protein: double.tryParse(_prot.text.replaceAll(',', '.')) ?? 0,
         carbs: double.tryParse(_carb.text.replaceAll(',', '.')) ?? 0,
         fat: double.tryParse(_fat.text.replaceAll(',', '.')) ?? 0,
+        goalType: _goalType,
       );
+
       await SettingsRepository.saveGoals(uid, g);
 
       if (!mounted) return;
 
-      // Vai para a Home (aba 0), limpando a pilha
       Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (_) => const HomeView(
@@ -106,11 +85,6 @@ class _EditGoalsViewState extends State<EditGoalsView> {
           ),
         ),
         (_) => false,
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar metas: $e')),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -146,9 +120,11 @@ class _EditGoalsViewState extends State<EditGoalsView> {
     );
   }
 
-  Widget _numField(TextEditingController c, String label) => TextField(
-        controller: c,
-        decoration: InputDecoration(labelText: label),
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      );
+  Widget _numField(TextEditingController c, String label) {
+    return TextField(
+      controller: c,
+      decoration: InputDecoration(labelText: label),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    );
+  }
 }

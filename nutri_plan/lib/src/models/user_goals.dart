@@ -3,30 +3,41 @@ class UserGoals {
   final double protein;
   final double carbs;
   final double fat;
+  final String goalType;
 
-  const UserGoals(
-      {required this.kcal,
-      required this.protein,
-      required this.carbs,
-      required this.fat});
+  const UserGoals({
+    required this.kcal,
+    required this.protein,
+    required this.carbs,
+    required this.fat,
+    required this.goalType,
+  });
 
-  static const UserGoals defaults =
-      UserGoals(kcal: 2200, protein: 150, carbs: 250, fat: 70);
+  static UserGoals get defaults => const UserGoals(
+        kcal: 2000,
+        protein: 100,
+        carbs: 200,
+        fat: 60,
+        goalType: 'maintenance',
+      );
+
+  factory UserGoals.fromJson(Map<String, dynamic>? j) {
+    j ??= {};
+
+    return UserGoals(
+      kcal: (j['kcal'] ?? 2000).toDouble(),
+      protein: (j['protein'] ?? 100).toDouble(),
+      carbs: (j['carbs'] ?? 200).toDouble(),
+      fat: (j['fat'] ?? 60).toDouble(),
+      goalType: j['goalType'] ?? 'maintenance',
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'kcal': kcal,
         'protein': protein,
         'carbs': carbs,
         'fat': fat,
+        'goalType': goalType,
       };
-
-  factory UserGoals.fromJson(Map<String, dynamic>? m) {
-    if (m == null) return defaults;
-    double d(String k) => (m[k] is num) ? (m[k] as num).toDouble() : 0.0;
-    return UserGoals(
-        kcal: d('kcal'),
-        protein: d('protein'),
-        carbs: d('carbs'),
-        fat: d('fat'));
-  }
 }
