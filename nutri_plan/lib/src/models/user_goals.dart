@@ -3,7 +3,7 @@ class UserGoals {
   final double protein;
   final double carbs;
   final double fat;
-  final String goalType; // NEW
+  final String goalType;
 
   const UserGoals({
     required this.kcal,
