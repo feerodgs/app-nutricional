@@ -123,7 +123,11 @@ class OnboardingViewModel extends ChangeNotifier {
       protein: protein,
       carbs: carbs,
       fat: fat,
-      goalType: goalType,
+      goalType: goal == "cutting"
+          ? "cutting"
+          : goal == "bulking"
+              ? "bulking"
+              : "maintenance",
     );
   }
 }

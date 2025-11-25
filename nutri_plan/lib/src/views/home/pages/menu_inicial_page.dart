@@ -5,6 +5,7 @@ import '../../../data/meal_repository.dart';
 import '../../../data/settings_repository.dart';
 import '../../../models/meal.dart';
 import '../../../models/user_goals.dart';
+import '../../../services/daily_meal_service.dart';
 import '../../home/widgets/kpi_tile.dart';
 
 double _clamp01(double x) => x < 0 ? 0.0 : (x > 1 ? 1.0 : x);
@@ -32,7 +33,6 @@ class MenuInicialPage extends StatelessWidget {
           builder: (context, snap) {
             final allMeals = snap.data ?? const <Meal>[];
 
-            // Apenas refeições realizadas
             final doneMeals = allMeals.where((m) => m.done).toList();
 
             final totKcal = doneMeals.fold(0.0, (a, m) => a + m.totalKcal);
@@ -45,13 +45,32 @@ class MenuInicialPage extends StatelessWidget {
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text(
-                  'Menu inicial',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Menu inicial',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    FilledButton(
+                      onPressed: () async {
+                        await DailyMealService.generateFresh(uid);
+
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("Refeições do dia geradas!")),
+                          );
+                        }
+                      },
+                      child: const Text("Gerar refeições"),
+                    ),
+                  ],
                 ),
+
                 const SizedBox(height: 12),
 
-                // KPIs — somente refeições concluídas
+                // KPIs
                 KpiTile(
                   title: 'Kcal restantes',
                   value: kcalLeft.toStringAsFixed(0),
@@ -130,7 +149,7 @@ class MenuInicialPage extends StatelessWidget {
   }
 
   String _fmtTime(DateTime d) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(d.hour)}:${two(d.minute)}';
+    String t(int n) => n.toString().padLeft(2, '0');
+    return '${t(d.hour)}:${t(d.minute)}';
   }
 }

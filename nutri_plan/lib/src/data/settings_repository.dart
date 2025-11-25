@@ -9,27 +9,33 @@ class SettingsRepository {
 
   static Stream<UserGoals> watchGoals(String uid) =>
       _doc(uid).snapshots().map((s) {
-        if (s.exists && s.data() != null) {
-          return UserGoals.fromJson(s.data());
+        final data = s.data();
+        if (data != null) {
+          return UserGoals.fromJson(data);
         }
         return UserGoals.defaults;
       });
 
   static Future<UserGoals> getGoals(String uid,
       {bool createIfMissing = true}) async {
+    // 1) CACHE
     try {
       final c = await _doc(uid).get(const GetOptions(source: Source.cache));
-      if (c.exists && c.data() != null) {
-        return UserGoals.fromJson(c.data());
+      final data = c.data();
+      if (data != null) {
+        return UserGoals.fromJson(data);
       }
     } catch (_) {}
 
+    // 2) SERVER
     try {
       final s = await _doc(uid).get(const GetOptions(source: Source.server));
-      if (s.exists && s.data() != null) {
-        return UserGoals.fromJson(s.data());
+      final data = s.data();
+      if (data != null) {
+        return UserGoals.fromJson(data);
       }
 
+      // 3) Criar metas padrão
       if (createIfMissing) {
         final d = UserGoals.defaults;
         await _doc(uid).set(d.toJson(), SetOptions(merge: true));
@@ -46,9 +52,8 @@ class SettingsRepository {
   static Future<void> saveGoals(String uid, UserGoals g) =>
       _doc(uid).set(g.toJson(), SetOptions(merge: true));
 
-  static Future<void> setGoals(String uid, UserGoals goals) async {
-    await _doc(uid).set(goals.toJson(), SetOptions(merge: true));
-  }
+  static Future<void> setGoals(String uid, UserGoals goals) async =>
+      _doc(uid).set(goals.toJson(), SetOptions(merge: true));
 
   static Future<void> ensureDefaults(String uid) async {
     final doc = await _doc(uid).get();

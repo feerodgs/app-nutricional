@@ -49,7 +49,10 @@ class MealRepository {
   }
 
   static Future<void> save(Meal meal) async {
-    final ref = _col(meal.userId).doc(meal.id.isEmpty ? null : meal.id);
+    final ref = meal.id.isEmpty
+        ? _col(meal.userId).doc()
+        : _col(meal.userId).doc(meal.id);
+
     final data = Map<String, dynamic>.from(meal.toJson())
       ..remove('id')
       ..['userId'] = meal.userId;
@@ -69,6 +72,20 @@ class MealRepository {
 
   static Future<void> delete(String uid, String mealId) async {
     await _col(uid).doc(mealId).delete();
+  }
+
+  static Future<void> deleteDay(String uid, DateTime day) async {
+    final start = DateTime(day.year, day.month, day.day);
+    final end = start.add(const Duration(days: 1));
+
+    final q = await _col(uid)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('date', isLessThan: Timestamp.fromDate(end))
+        .get();
+
+    for (final d in q.docs) {
+      await d.reference.delete();
+    }
   }
 
   static Future<List<Meal>> getByDay(String uid, DateTime day) async {
