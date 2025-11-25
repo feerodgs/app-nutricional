@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../viewmodels/user_viewmodel.dart';
 import '../../../viewmodels/auth_viewmodel.dart';
-import '../../settings/edit_goals_view.dart'; // ajuste o import se necessário
+import '../../settings/edit_goals_view.dart';
 
 class ConfiguracoesPage extends StatefulWidget {
   const ConfiguracoesPage({super.key});
@@ -13,6 +13,14 @@ class ConfiguracoesPage extends StatefulWidget {
 }
 
 class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      context.read<UserViewModel>().loadUser();
+    });
+  }
+
   String _initials(String? name, String? email) {
     final base = (name?.trim().isNotEmpty == true ? name! : (email ?? ''))
         .replaceAll(RegExp(r'\s+'), ' ')
@@ -54,13 +62,12 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
         return AnimatedPadding(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
-          padding:
-              EdgeInsets.only(bottom: viewInsets.bottom), // sobe com teclado
+          padding: EdgeInsets.only(bottom: viewInsets.bottom),
           child: DraggableScrollableSheet(
             initialChildSize: 0.6,
             minChildSize: 0.4,
             maxChildSize: 0.95,
-            expand: false, // não ocupa a tela toda; respeita o padding animado
+            expand: false,
             builder: (ctx, scroll) {
               return SingleChildScrollView(
                 controller: scroll,

@@ -1,0 +1,234 @@
+{
+  "bulking": {
+    "meals": [
+      {
+        "name": "Omelete proteico com batata doce",
+        "items": [
+          { "food": "Ovos", "quantity": 3, "unit": "un", "kcal": 210, "protein": 18, "carbs": 1, "fat": 15 },
+          { "food": "Claras de ovo", "quantity": 2, "unit": "un", "kcal": 34, "protein": 7, "carbs": 0, "fat": 0 },
+          { "food": "Batata doce cozida", "quantity": 120, "unit": "g", "kcal": 114, "protein": 2, "carbs": 27, "fat": 0 }
+        ],
+        "tags": ["cafe", "bulking", "high_protein"]
+      },
+      {
+        "name": "Iogurte grego com aveia e banana",
+        "items": [
+          { "food": "Iogurte grego natural", "quantity": 150, "unit": "g", "kcal": 146, "protein": 13, "carbs": 6, "fat": 7 },
+          { "food": "Aveia em flocos", "quantity": 40, "unit": "g", "kcal": 152, "protein": 5, "carbs": 26, "fat": 3 },
+          { "food": "Banana", "quantity": 80, "unit": "g", "kcal": 72, "protein": 1, "carbs": 19, "fat": 0 }
+        ],
+        "tags": ["cafe", "snack", "carb_load"]
+      },
+      {
+        "name": "Arroz, frango e abacate",
+        "items": [
+          { "food": "Peito de frango grelhado", "quantity": 180, "unit": "g", "kcal": 198, "protein": 37, "carbs": 0, "fat": 4 },
+          { "food": "Arroz branco cozido", "quantity": 200, "unit": "g", "kcal": 260, "protein": 5, "carbs": 57, "fat": 1 },
+          { "food": "Abacate", "quantity": 80, "unit": "g", "kcal": 128, "protein": 1, "carbs": 5, "fat": 12 }
+        ],
+        "tags": ["almoco", "high_carb", "high_protein"]
+      },
+      {
+        "name": "Carne moída com macarrão integral",
+        "items": [
+          { "food": "Carne moída magra", "quantity": 150, "unit": "g", "kcal": 242, "protein": 26, "carbs": 0, "fat": 15 },
+          { "food": "Macarrão integral cozido", "quantity": 180, "unit": "g", "kcal": 230, "protein": 8, "carbs": 45, "fat": 1 }
+        ],
+        "tags": ["almoco", "jantar", "bulking"]
+      },
+      {
+        "name": "Salmão grelhado com arroz e brócolis",
+        "items": [
+          { "food": "Salmão grelhado", "quantity": 150, "unit": "g", "kcal": 280, "protein": 29, "carbs": 0, "fat": 18 },
+          { "food": "Arroz branco", "quantity": 180, "unit": "g", "kcal": 234, "protein": 4, "carbs": 51, "fat": 0 },
+          { "food": "Brócolis", "quantity": 100, "unit": "g", "kcal": 34, "protein": 3, "carbs": 6, "fat": 0 }
+        ],
+        "tags": ["jantar", "gordura_boa", "high_protein"]
+      },
+      {
+        "name": "Sanduíche natural de atum",
+        "items": [
+          { "food": "Pão integral", "quantity": 2, "unit": "fatias", "kcal": 140, "protein": 6, "carbs": 24, "fat": 2 },
+          { "food": "Atum em água", "quantity": 100, "unit": "g", "kcal": 110, "protein": 23, "carbs": 0, "fat": 1 },
+          { "food": "Requeijão light", "quantity": 20, "unit": "g", "kcal": 24, "protein": 2, "carbs": 1, "fat": 2 }
+        ],
+        "tags": ["snack", "pratico", "lean_bulk"]
+      }
+    ]
+  },
+
+  "cutting": {
+    "meals": [
+      {
+        "name": "Ovos mexidos com espinafre",
+        "items": [
+          { "food": "Ovos", "quantity": 2, "unit": "un", "kcal": 140, "protein": 12, "carbs": 1, "fat": 9 },
+          { "food": "Espinafre refogado", "quantity": 50, "unit": "g", "kcal": 12, "protein": 1, "carbs": 2, "fat": 0 }
+        ],
+        "tags": ["cafe", "low_carb", "high_protein"]
+      },
+      {
+        "name": "Iogurte natural com chia e morango",
+        "items": [
+          { "food": "Iogurte natural", "quantity": 120, "unit": "g", "kcal": 70, "protein": 7, "carbs": 5, "fat": 2 },
+          { "food": "Chia", "quantity": 10, "unit": "g", "kcal": 49, "protein": 2, "carbs": 4, "fat": 3 },
+          { "food": "Morango", "quantity": 60, "unit": "g", "kcal": 18, "protein": 0, "carbs": 4, "fat": 0 }
+        ],
+        "tags": ["cafe", "low_carb", "fibras"]
+      },
+      {
+        "name": "Frango grelhado com legumes",
+        "items": [
+          { "food": "Peito de frango grelhado", "quantity": 150, "unit": "g", "kcal": 165, "protein": 31, "carbs": 0, "fat": 3 },
+          { "food": "Brócolis cozido", "quantity": 100, "unit": "g", "kcal": 34, "protein": 3, "carbs": 6, "fat": 0 },
+          { "food": "Cenoura cozida", "quantity": 80, "unit": "g", "kcal": 33, "protein": 1, "carbs": 8, "fat": 0 }
+        ],
+        "tags": ["almoco", "jantar", "low_carb", "high_protein"]
+      },
+      {
+        "name": "Atum com salada verde",
+        "items": [
+          { "food": "Atum em água", "quantity": 120, "unit": "g", "kcal": 132, "protein": 28, "carbs": 0, "fat": 1 },
+          { "food": "Mix de folhas", "quantity": 50, "unit": "g", "kcal": 10, "protein": 1, "carbs": 2, "fat": 0 },
+          { "food": "Tomate", "quantity": 60, "unit": "g", "kcal": 11, "protein": 0, "carbs": 2, "fat": 0 }
+        ],
+        "tags": ["almoco", "jantar", "low_carb"]
+      },
+      {
+        "name": "Sopa low carb de abóbora com frango",
+        "items": [
+          { "food": "Abóbora cozida", "quantity": 200, "unit": "g", "kcal": 48, "protein": 1, "carbs": 12, "fat": 0 },
+          { "food": "Frango desfiado", "quantity": 80, "unit": "g", "kcal": 88, "protein": 17, "carbs": 0, "fat": 2 }
+        ],
+        "tags": ["jantar", "low_carb", "fibras"]
+      }
+    ]
+  },
+
+  "high_protein": {
+    "meals": [
+      {
+        "name": "Ovos mexidos com cottage",
+        "items": [
+          { "food": "Ovos", "quantity": 3, "unit": "un", "kcal": 210, "protein": 18, "carbs": 1, "fat": 15 },
+          { "food": "Queijo cottage", "quantity": 80, "unit": "g", "kcal": 72, "protein": 11, "carbs": 3, "fat": 1 }
+        ],
+        "tags": ["cafe", "alta_proteina"]
+      },
+      {
+        "name": "Smoothie proteico de morango",
+        "items": [
+          { "food": "Whey protein", "quantity": 30, "unit": "g", "kcal": 120, "protein": 24, "carbs": 3, "fat": 1 },
+          { "food": "Morango", "quantity": 80, "unit": "g", "kcal": 25, "protein": 1, "carbs": 6, "fat": 0 },
+          { "food": "Água", "quantity": 200, "unit": "ml", "kcal": 0, "protein": 0, "carbs": 0, "fat": 0 }
+        ],
+        "tags": ["cafe", "shake", "alta_proteina"]
+      },
+      {
+        "name": "Frango grelhado com brócolis",
+        "items": [
+          { "food": "Peito de frango grelhado", "quantity": 180, "unit": "g", "kcal": 198, "protein": 37, "carbs": 0, "fat": 4 },
+          { "food": "Brócolis cozido", "quantity": 120, "unit": "g", "kcal": 40, "protein": 3, "carbs": 8, "fat": 0 }
+        ],
+        "tags": ["almoco", "lowcarb", "alta_proteina"]
+      },
+      {
+        "name": "Carne magra com ovos cozidos",
+        "items": [
+          { "food": "Patinho moído refogado", "quantity": 150, "unit": "g", "kcal": 250, "protein": 31, "carbs": 0, "fat": 13 },
+          { "food": "Ovos cozidos", "quantity": 2, "unit": "un", "kcal": 140, "protein": 12, "carbs": 1, "fat": 10 }
+        ],
+        "tags": ["almoco", "jantar", "alta_proteina"]
+      },
+      {
+        "name": "Tilápia assada com aspargos",
+        "items": [
+          { "food": "Tilápia assada", "quantity": 170, "unit": "g", "kcal": 150, "protein": 34, "carbs": 0, "fat": 2 },
+          { "food": "Aspargos grelhados", "quantity": 100, "unit": "g", "kcal": 22, "protein": 2, "carbs": 4, "fat": 0 }
+        ],
+        "tags": ["jantar", "lowcarb", "alta_proteina"]
+      },
+      {
+        "name": "Omelete hiperproteico",
+        "items": [
+          { "food": "Ovos", "quantity": 2, "unit": "un", "kcal": 140, "protein": 12, "carbs": 1, "fat": 10 },
+          { "food": "Claras de ovo", "quantity": 100, "unit": "g", "kcal": 52, "protein": 11, "carbs": 1, "fat": 0 },
+          { "food": "Queijo minas light", "quantity": 40, "unit": "g", "kcal": 72, "protein": 6, "carbs": 0, "fat": 4 }
+        ],
+        "tags": ["cafe", "jantar", "alta_proteina"]
+      },
+      {
+        "name": "Atum com salada verde",
+        "items": [
+          { "food": "Atum em água", "quantity": 120, "unit": "g", "kcal": 132, "protein": 28, "carbs": 0, "fat": 1 },
+          { "food": "Salada verde", "quantity": 50, "unit": "g", "kcal": 9, "protein": 1, "carbs": 2, "fat": 0 }
+        ],
+        "tags": ["snack", "lowcarb", "alta_proteina"]
+      }
+    ]
+  },
+
+  "maintenance": {
+    "meals": [
+      {
+        "name": "Omelete simples com tomate",
+        "items": [
+          { "food": "Ovos", "quantity": 2, "unit": "un", "kcal": 140, "protein": 12, "carbs": 1, "fat": 10 },
+          { "food": "Tomate picado", "quantity": 60, "unit": "g", "kcal": 11, "protein": 1, "carbs": 3, "fat": 0 }
+        ],
+        "tags": ["cafe", "balanceado"]
+      },
+      {
+        "name": "Vitamina de banana com aveia",
+        "items": [
+          { "food": "Banana", "quantity": 80, "unit": "g", "kcal": 72, "protein": 1, "carbs": 19, "fat": 0 },
+          { "food": "Leite desnatado", "quantity": 200, "unit": "ml", "kcal": 74, "protein": 7, "carbs": 10, "fat": 0 },
+          { "food": "Aveia em flocos", "quantity": 20, "unit": "g", "kcal": 76, "protein": 3, "carbs": 13, "fat": 1 }
+        ],
+        "tags": ["cafe", "snack"]
+      },
+      {
+        "name": "Frango grelhado com arroz e legumes",
+        "items": [
+          { "food": "Peito de frango grelhado", "quantity": 150, "unit": "g", "kcal": 165, "protein": 31, "carbs": 0, "fat": 3 },
+          { "food": "Arroz branco cozido", "quantity": 150, "unit": "g", "kcal": 195, "protein": 4, "carbs": 43, "fat": 0 },
+          { "food": "Legumes refogados", "quantity": 100, "unit": "g", "kcal": 55, "protein": 2, "carbs": 8, "fat": 2 }
+        ],
+        "tags": ["almoco", "equilibrado"]
+      },
+      {
+        "name": "Carne cozida com mandioca",
+        "items": [
+          { "food": "Carne bovina cozida", "quantity": 150, "unit": "g", "kcal": 260, "protein": 28, "carbs": 0, "fat": 16 },
+          { "food": "Mandioca cozida", "quantity": 120, "unit": "g", "kcal": 150, "protein": 1, "carbs": 36, "fat": 0 }
+        ],
+        "tags": ["almoco", "jantar", "balanceado"]
+      },
+      {
+        "name": "Tilápia grelhada com purê de batata",
+        "items": [
+          { "food": "Tilápia grelhada", "quantity": 150, "unit": "g", "kcal": 135, "protein": 28, "carbs": 0, "fat": 2 },
+          { "food": "Purê de batata", "quantity": 150, "unit": "g", "kcal": 145, "protein": 3, "carbs": 21, "fat": 4 }
+        ],
+        "tags": ["jantar", "leve"]
+      },
+      {
+        "name": "Wrap de frango com salada",
+        "items": [
+          { "food": "Tortilha integral", "quantity": 1, "unit": "un", "kcal": 110, "protein": 4, "carbs": 18, "fat": 3 },
+          { "food": "Peito de frango desfiado", "quantity": 100, "unit": "g", "kcal": 110, "protein": 23, "carbs": 0, "fat": 1 },
+          { "food": "Salada (alface e tomate)", "quantity": 40, "unit": "g", "kcal": 10, "protein": 0, "carbs": 2, "fat": 0 }
+        ],
+        "tags": ["snack", "lanche", "leve"]
+      },
+      {
+        "name": "Iogurte com granola light",
+        "items": [
+          { "food": "Iogurte natural", "quantity": 170, "unit": "g", "kcal": 95, "protein": 7, "carbs": 12, "fat": 2 },
+          { "food": "Granola light", "quantity": 30, "unit": "g", "kcal": 110, "protein": 3, "carbs": 18, "fat": 2 }
+        ],
+        "tags": ["snack", "balanceado"]
+      }
+    ]
+  }
+}

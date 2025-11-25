@@ -14,6 +14,7 @@ class RefeicoesPage extends StatelessWidget {
     if (user == null) {
       return const Center(child: Text('Faça login para ver suas refeições.'));
     }
+
     final uid = user.uid;
     final today = DateTime.now();
 
@@ -21,7 +22,7 @@ class RefeicoesPage extends StatelessWidget {
       children: [
         Expanded(
           child: StreamBuilder<List<Meal>>(
-            stream: MealRepository.watchAll(uid, day: today), // só hoje
+            stream: MealRepository.watchAll(uid, day: today),
             initialData: const <Meal>[],
             builder: (context, snap) {
               final meals = snap.data ?? const <Meal>[];
@@ -29,8 +30,10 @@ class RefeicoesPage extends StatelessWidget {
               return ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Text('Refeições de hoje',
-                      style: Theme.of(context).textTheme.headlineSmall),
+                  Text(
+                    'Refeições de hoje',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                   const SizedBox(height: 8),
                   if (meals.isEmpty &&
                       snap.connectionState == ConnectionState.waiting)
@@ -41,86 +44,120 @@ class RefeicoesPage extends StatelessWidget {
                   else if (meals.isEmpty)
                     const Text('Nenhuma refeição hoje.'),
                   if (meals.isNotEmpty)
-                    ...meals.map((m) => Card(
-                          child: ListTile(
-                            leading: const Icon(Icons.restaurant_menu),
-                            title: Text(m.name),
-                            subtitle: Text(
-                                '${_fmtTime(m.date)} • ${m.items.length} itens'),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  '${m.totalKcal.toStringAsFixed(0)} kcal',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                const SizedBox(width: 8),
-                                IconButton(
-                                  tooltip: 'Excluir',
-                                  icon: const Icon(Icons.delete_outline),
-                                  onPressed: () async {
-                                    final ok = await showDialog<bool>(
-                                      context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        title: const Text('Excluir refeição'),
-                                        content: Text(
-                                            'Remover "${m.name}"? Esta ação não pode ser desfeita.'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(ctx, false),
-                                            child: const Text('Cancelar'),
-                                          ),
-                                          FilledButton(
-                                            onPressed: () =>
-                                                Navigator.pop(ctx, true),
-                                            child: const Text('Excluir'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    if (ok == true) {
-                                      try {
-                                        await MealRepository.delete(uid, m.id);
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                                content:
-                                                    Text('Refeição excluída.')),
-                                          );
-                                        }
-                                      } catch (e) {
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                                content: Text(
-                                                    'Erro ao excluir: $e')),
-                                          );
-                                        }
+                    ...meals.map(
+                      (m) => Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: m.done ? Colors.grey.shade300 : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 3,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.restaurant_menu),
+                          title: Text(
+                            m.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              decoration:
+                                  m.done ? TextDecoration.lineThrough : null,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${_fmtTime(m.date)} • ${m.items.length} itens',
+                            style: TextStyle(
+                              decoration:
+                                  m.done ? TextDecoration.lineThrough : null,
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${m.totalKcal.toStringAsFixed(0)} kcal',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(width: 8),
+                              Checkbox(
+                                value: m.done,
+                                onChanged: (v) async {
+                                  await MealRepository.update(uid, m.id, {
+                                    'done': v,
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () async {
+                                  final ok = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Excluir refeição'),
+                                      content: Text(
+                                          'Remover "${m.name}"? Esta ação não pode ser desfeita.'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, false),
+                                          child: const Text('Cancelar'),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, true),
+                                          child: const Text('Excluir'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (ok == true) {
+                                    try {
+                                      await MealRepository.delete(uid, m.id);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content:
+                                                  Text('Refeição excluída.')),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content:
+                                                  Text('Erro ao excluir: $e')),
+                                        );
                                       }
                                     }
-                                  },
-                                ),
-                              ],
-                            ),
-                            onTap: () async {
-                              final updated = await Navigator.push<bool>(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => EditMealView(meal: m)),
-                              );
-                              if (updated == true && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Refeição atualizada.')),
-                                );
-                              }
-                            },
+                                  }
+                                },
+                              ),
+                            ],
                           ),
-                        )),
+                          onTap: () async {
+                            final updated = await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => EditMealView(meal: m)),
+                            );
+                            if (updated == true && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Refeição atualizada.')),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 80),
                 ],
               );

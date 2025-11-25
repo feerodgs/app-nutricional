@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../../data/meal_repository.dart';
 import '../../../data/settings_repository.dart';
 import '../../../models/meal.dart';
@@ -14,7 +15,10 @@ class MenuInicialPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return const Center(child: Text('Faça login.'));
+    if (user == null) {
+      return const Center(child: Text('Faça login.'));
+    }
+
     final uid = user.uid;
 
     return StreamBuilder<UserGoals>(
@@ -26,23 +30,28 @@ class MenuInicialPage extends StatelessWidget {
           stream: MealRepository.watchAll(uid, day: DateTime.now()),
           initialData: const <Meal>[],
           builder: (context, snap) {
-            final meals = snap.data ?? const <Meal>[];
+            final allMeals = snap.data ?? const <Meal>[];
 
-            final totKcal = meals.fold<double>(0, (a, m) => a + m.totalKcal);
-            final totProt = meals.fold<double>(0, (a, m) => a + m.totalProtein);
-            final totCarb = meals.fold<double>(0, (a, m) => a + m.totalCarbs);
-            final totFat = meals.fold<double>(0, (a, m) => a + m.totalFat);
+            // Apenas refeições realizadas
+            final doneMeals = allMeals.where((m) => m.done).toList();
+
+            final totKcal = doneMeals.fold(0.0, (a, m) => a + m.totalKcal);
+            final totProt = doneMeals.fold(0.0, (a, m) => a + m.totalProtein);
+            final totCarb = doneMeals.fold(0.0, (a, m) => a + m.totalCarbs);
+            final totFat = doneMeals.fold(0.0, (a, m) => a + m.totalFat);
 
             final kcalLeft = (goals.kcal - totKcal).clamp(0, goals.kcal);
 
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text('Menu inicial',
-                    style: Theme.of(context).textTheme.headlineSmall),
+                Text(
+                  'Menu inicial',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
                 const SizedBox(height: 12),
 
-                // KPIs com metas do usuário
+                // KPIs — somente refeições concluídas
                 KpiTile(
                   title: 'Kcal restantes',
                   value: kcalLeft.toStringAsFixed(0),
@@ -75,21 +84,6 @@ class MenuInicialPage extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // Botão único: Montar plano alimentar
-                FilledButton.icon(
-                  onPressed: () {
-                    // TODO: implementar navegação/fluxo de IA aqui
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Em breve: montar plano alimentar'),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.smart_toy_outlined),
-                  label: const Text('Montar plano alimentar'),
-                ),
-
-                const SizedBox(height: 16),
                 Text('Hoje', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 6),
 
@@ -100,21 +94,31 @@ class MenuInicialPage extends StatelessWidget {
                       child: CircularProgressIndicator(),
                     ),
                   )
-                else if (meals.isEmpty)
+                else if (allMeals.isEmpty)
                   const Text('Sem refeições ainda.')
                 else
-                  ...meals.map((m) => Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.restaurant_menu),
-                          title: Text(m.name),
-                          subtitle: Text(
-                              '${_fmtTime(m.date)} • ${m.items.length} itens'),
-                          trailing: Text(
-                            '${m.totalKcal.toStringAsFixed(0)} kcal',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                  ...allMeals.map(
+                    (m) => Card(
+                      color: m.done ? Colors.green.shade50 : null,
+                      child: ListTile(
+                        leading: Icon(
+                          m.done
+                              ? Icons.check_circle
+                              : Icons.radio_button_unchecked,
+                          color: m.done ? Colors.green : Colors.grey,
+                        ),
+                        title: Text(m.name),
+                        subtitle: Text(
+                            '${_fmtTime(m.date)} • ${m.items.length} itens'),
+                        trailing: Text(
+                          '${m.totalKcal.toStringAsFixed(0)} kcal',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      )),
+                      ),
+                    ),
+                  ),
 
                 const SizedBox(height: 80),
               ],
