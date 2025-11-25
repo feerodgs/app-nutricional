@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/app_user.dart';
@@ -9,58 +10,60 @@ class UserViewModel extends ChangeNotifier {
   bool loading = false;
   String? error;
 
-  StreamSubscription<AppUser?>? _sub;
-
-  Future<void> loadUser() async {
-    await loadCurrent();
-  }
+  Stream<AppUser?>? _sub;
+  StreamSubscription<AppUser?>? _listener;
 
   Future<void> loadCurrent() async {
     final fbUser = fb.FirebaseAuth.instance.currentUser;
 
     if (fbUser == null) {
       user = null;
+      error = null;
       notifyListeners();
       return;
     }
 
     loading = true;
+    error = null; // LIMPA ERRO ANTIGO !!!
     notifyListeners();
 
-    _sub?.cancel();
-
-    _sub = UserRepository.watchById(fbUser.uid).listen((u) {
-      user = u;
-      loading = false;
-      notifyListeners();
-    }, onError: (_) {
-      error = 'Erro ao carregar usuário';
-      loading = false;
-      notifyListeners();
-    });
-  }
-
-  Future<void> updateName(String name) async {
-    if (user == null) return;
-    loading = true;
-    notifyListeners();
+    // Cancela listener anterior
+    await _listener?.cancel();
 
     try {
-      final u = user!.copyWith(name: name);
-      await UserRepository.updateProfile(u);
-      user = u;
-    } catch (_) {
-      error = 'Erro ao atualizar perfil';
-    } finally {
+      _listener = UserRepository.watchById(fbUser.uid).listen(
+        (u) {
+          user = u;
+
+          // se o doc não existir ainda, não é erro
+          if (u == null) {
+            error = null;
+          }
+
+          loading = false;
+          notifyListeners();
+        },
+        onError: (e) {
+          error = "Erro ao carregar usuário";
+          loading = false;
+          notifyListeners();
+        },
+      );
+    } catch (e) {
       loading = false;
+      error = "Erro ao carregar usuário";
       notifyListeners();
     }
   }
 
+  // -------------------------------------------
+  // Update profile
+  // -------------------------------------------
   Future<void> updateProfile({String? name, String? email}) async {
     final fbUser = fb.FirebaseAuth.instance.currentUser;
+
     if (fbUser == null) {
-      error = 'Sem usuário autenticado';
+      error = "Sem usuário autenticado";
       notifyListeners();
       return;
     }
@@ -70,8 +73,9 @@ class UserViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final updated = (user ?? AppUser(uid: fbUser.uid))
-          .copyWith(name: name ?? user?.name, email: email ?? user?.email);
+      final updated =
+          (user ?? AppUser(uid: fbUser.uid, name: null, email: null))
+              .copyWith(name: name ?? user?.name, email: email ?? user?.email);
 
       await UserRepository.updateProfile(updated);
       user = updated;
@@ -85,8 +89,8 @@ class UserViewModel extends ChangeNotifier {
           email.trim() != fbUser.email) {
         await fbUser.verifyBeforeUpdateEmail(email.trim());
       }
-    } catch (_) {
-      error = 'Erro ao atualizar perfil';
+    } catch (e) {
+      error = "Erro ao atualizar perfil";
     } finally {
       loading = false;
       notifyListeners();
@@ -94,8 +98,8 @@ class UserViewModel extends ChangeNotifier {
   }
 
   @override
-  void dispose() {
-    _sub?.cancel();
+  Future<void> dispose() async {
+    await _listener?.cancel();
     super.dispose();
   }
 }

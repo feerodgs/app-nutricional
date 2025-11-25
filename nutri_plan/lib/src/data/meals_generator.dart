@@ -1,74 +1,126 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 import '../models/meal.dart';
 import '../models/meal_item.dart';
 import '../models/user_goals.dart';
 
 class MealsGenerator {
-  static Future<List<Meal>> generate(String uid, UserGoals goals) async {
+  /// Carrega o banco de refeições
+  static Future<Map<String, dynamic>> _loadDB() async {
     final raw = await rootBundle.loadString("assets/meals.json");
-    final data = jsonDecode(raw);
-
-    final list = (data[goals.goalType]["meals"] as List);
-
-    List<Map<String, dynamic>> all = List<Map<String, dynamic>>.from(list);
-
-    Map<String, List<Map<String, dynamic>>> byTag = {
-      "cafe": [],
-      "almoco": [],
-      "lanche": [],
-      "jantar": [],
-    };
-
-    for (var meal in all) {
-      final tags = List<String>.from(meal["tags"] ?? []);
-      if (tags.contains("cafe")) byTag["cafe"]!.add(meal);
-      if (tags.contains("almoco")) byTag["almoco"]!.add(meal);
-      if (tags.contains("snack") || tags.contains("lanche"))
-        byTag["lanche"]!.add(meal);
-      if (tags.contains("jantar")) byTag["jantar"]!.add(meal);
-    }
-
-    Map<String, Map<String, dynamic>> selected = {
-      "cafe": _pickOne(byTag["cafe"], all),
-      "almoco": _pickOne(byTag["almoco"], all),
-      "lanche": _pickOne(byTag["lanche"], all),
-      "jantar": _pickOne(byTag["jantar"], all),
-    };
-
-    List<Meal> out = [];
-
-    out.add(_buildMeal(uid, "Café da manhã", selected["cafe"]!));
-    out.add(_buildMeal(uid, "Almoço", selected["almoco"]!));
-    out.add(_buildMeal(uid, "Lanche", selected["lanche"]!));
-    out.add(_buildMeal(uid, "Jantar", selected["jantar"]!));
-
-    return out;
+    return jsonDecode(raw);
   }
 
-  static Map<String, dynamic> _pickOne(List? list, List full) {
-    if (list != null && list.isNotEmpty) return list.first;
-    return full.first;
+  /// Método antigo (mantido para compatibilidade)
+  static Future<List<Meal>> generate(String uid, UserGoals goals) async {
+    return generateWithRules(
+      uid: uid,
+      goals: goals,
+      mealsPerDay: 4,
+      times: const [],
+      day: DateTime.now(),
+    );
   }
 
-  static Meal _buildMeal(String uid, String title, Map<String, dynamic> src) {
-    return Meal(
-      id: "",
-      userId: uid,
-      name: title,
-      date: DateTime.now(),
-      done: false,
-      items: (src["items"] as List).map((i) {
+  /// 🔥 NOVO MÉTODO — gera refeições organizadas por refeição (café, almoço…)
+  static Future<List<Meal>> generateWithRules({
+    required String uid,
+    required UserGoals goals,
+    required int mealsPerDay,
+    required List<dynamic> times,
+    required DateTime day,
+  }) async {
+    final db = await _loadDB();
+    final mealsByType = db[goals.goalType]?["meals"] as List? ?? [];
+
+    if (mealsByType.isEmpty) return [];
+
+    // TAGS por tipo de refeição
+    const mealTags = {
+      "cafe": ["cafe", "breakfast", "morning"],
+      "almoco": ["almoco", "lunch"],
+      "lanche": ["snack", "lanche"],
+      "jantar": ["jantar", "dinner"]
+    };
+
+    // Tipos fixos de refeição
+    final slots = ["cafe", "almoco", "lanche", "jantar"];
+
+    // Se o usuário pedir mais que 4 refeições, duplicamos lanches
+    final selectedSlots = mealsPerDay <= 4
+        ? slots.take(mealsPerDay).toList()
+        : [...slots, ...List.filled(mealsPerDay - 4, "lanche")];
+
+    final List<Meal> finalList = [];
+
+    for (var i = 0; i < selectedSlots.length; i++) {
+      final slot = selectedSlots[i];
+
+      // Seleciona horário informado (se existir)
+      final time =
+          (i < times.length) ? times[i] : const TimeOfDay(hour: 12, minute: 0);
+
+      final mealDate = DateTime(
+        day.year,
+        day.month,
+        day.day,
+        time.hour,
+        time.minute,
+      );
+
+      // Filtra refeições pela tag
+      final matching = mealsByType.where((m) {
+        final tags = List<String>.from(m["tags"] ?? []);
+        return tags.any((t) => mealTags[slot]!.contains(t));
+      }).toList();
+
+      if (matching.isEmpty) continue;
+
+      matching.shuffle();
+      final chosen = matching.first;
+
+      // Converte items → MealItem
+      final items = (chosen["items"] as List).map((i) {
         return MealItem(
           food: i["food"],
-          quantity: (i["quantity"] as num).toDouble(),
+          quantity: (i["quantity"] * 1.0),
           unit: i["unit"],
-          kcal: (i["kcal"] as num).toDouble(),
-          protein: (i["protein"] as num).toDouble(),
-          carbs: (i["carbs"] as num).toDouble(),
-          fat: (i["fat"] as num).toDouble(),
+          kcal: (i["kcal"] * 1.0),
+          protein: (i["protein"] * 1.0),
+          carbs: (i["carbs"] * 1.0),
+          fat: (i["fat"] * 1.0),
         );
-      }).toList(),
-    );
+      }).toList();
+
+      finalList.add(
+        Meal(
+          id: "",
+          userId: uid,
+          name: _formatMealName(slot),
+          date: mealDate,
+          done: false,
+          items: items,
+        ),
+      );
+    }
+
+    return finalList;
+  }
+
+  /// Nome exibido da refeição
+  static String _formatMealName(String slot) {
+    switch (slot) {
+      case "cafe":
+        return "Café da manhã";
+      case "almoco":
+        return "Almoço";
+      case "lanche":
+        return "Lanche";
+      case "jantar":
+        return "Jantar";
+      default:
+        return "Refeição";
+    }
   }
 }

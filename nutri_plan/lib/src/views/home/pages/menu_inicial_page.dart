@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:nutri_plan/src/views/meals/meal_generation_config_screen.dart';
 
 import '../../../data/meal_repository.dart';
 import '../../../data/settings_repository.dart';
@@ -53,15 +54,13 @@ class MenuInicialPage extends StatelessWidget {
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     FilledButton(
-                      onPressed: () async {
-                        await DailyMealService.generateFresh(uid);
-
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text("Refeições do dia geradas!")),
-                          );
-                        }
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MealGenerationConfigScreen(),
+                          ),
+                        );
                       },
                       child: const Text("Gerar refeições"),
                     ),

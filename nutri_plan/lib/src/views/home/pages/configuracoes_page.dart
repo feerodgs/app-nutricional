@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../../viewmodels/user_viewmodel.dart';
 import '../../../viewmodels/auth_viewmodel.dart';
 import '../../settings/edit_goals_view.dart';
+import '../../settings/change_password_view.dart';
 
 class ConfiguracoesPage extends StatefulWidget {
   const ConfiguracoesPage({super.key});
@@ -17,7 +19,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<UserViewModel>().loadUser();
+      context.read<UserViewModel>().loadCurrent();
     });
   }
 
@@ -61,7 +63,6 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
 
         return AnimatedPadding(
           duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
           padding: EdgeInsets.only(bottom: viewInsets.bottom),
           child: DraggableScrollableSheet(
             initialChildSize: 0.6,
@@ -71,11 +72,10 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             builder: (ctx, scroll) {
               return SingleChildScrollView(
                 controller: scroll,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                padding: const EdgeInsets.all(16),
                 child: Form(
                   key: formKey,
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
                         height: 4,
@@ -92,7 +92,6 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                       TextFormField(
                         controller: nameCtrl,
                         decoration: const InputDecoration(labelText: 'Nome'),
-                        textInputAction: TextInputAction.next,
                         validator: (v) => (v == null || v.trim().isEmpty)
                             ? 'Informe o nome'
                             : null,
@@ -102,7 +101,6 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                         controller: emailCtrl,
                         decoration: const InputDecoration(labelText: 'E-mail'),
                         keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.done,
                         validator: (v) {
                           final t = (v ?? '').trim();
                           if (t.isEmpty) return 'Informe o e-mail';
@@ -111,7 +109,6 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                           }
                           return null;
                         },
-                        onFieldSubmitted: (_) => FocusScope.of(ctx).unfocus(),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -126,6 +123,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                             label: const Text('Salvar'),
                             onPressed: () async {
                               if (!formKey.currentState!.validate()) return;
+
                               try {
                                 await vm.updateProfile(
                                   name: nameCtrl.text.trim(),
@@ -143,7 +141,8 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                        content: Text('Erro ao salvar: $e')),
+                                      content: Text('Erro ao salvar: $e'),
+                                    ),
                                   );
                                 }
                               }
@@ -170,6 +169,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
     final displayName = (userVM.user?.name?.trim().isNotEmpty == true)
         ? userVM.user!.name!
         : (authUser?.displayName ?? 'Usuário');
+
     final displayEmail = (userVM.user?.email?.trim().isNotEmpty == true)
         ? userVM.user!.email!
         : (authUser?.email ?? '-');
@@ -179,6 +179,8 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
       children: [
         Text('Configurações', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
+
+        // EDITAR PERFIL
         Card(
           child: ListTile(
             leading:
@@ -190,6 +192,8 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           ),
         ),
         const SizedBox(height: 8),
+
+        // EDITAR METAS
         Card(
           child: ListTile(
             leading: const Icon(Icons.flag_outlined),
@@ -205,6 +209,27 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
           ),
         ),
         const SizedBox(height: 8),
+
+        // ALTERAR SENHA
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: const Text('Alterar senha'),
+            subtitle: const Text('Atualizar senha de acesso'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ChangePasswordView(),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // LOGOUT
         Card(
           child: ListTile(
             leading: const Icon(Icons.logout),
@@ -212,16 +237,20 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
             onTap: () => context.read<AuthViewModel>().signOut(),
           ),
         ),
+
         if (userVM.loading)
           const Padding(
             padding: EdgeInsets.only(top: 12),
             child: Center(child: CircularProgressIndicator()),
           ),
+
         if (userVM.error != null)
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child:
-                Text(userVM.error!, style: const TextStyle(color: Colors.red)),
+            child: Text(
+              userVM.error!,
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
       ],
     );
